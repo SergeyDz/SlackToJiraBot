@@ -5,12 +5,14 @@
  */
 package sd.samples.akka.slacktojirabot.Mapping;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import sd.samples.akka.slacktojirabot.POCO.Issue;
+import sd.samples.akka.slacktojirabot.POCO.JiraStatisticsItem;
 
 /**
  *
@@ -46,12 +48,21 @@ public class JiraStatisticsFormatter implements Callable<String>{
         Double totalStroyPoints = issues.stream().mapToDouble(i -> i.StoryPoints).sum();
         
         builder.append(String.format("*Total items*: %s _(%ssp)_. ", issues.size(), totalStroyPoints));
-        
-        issues.stream().collect(Collectors.groupingBy(w -> w.IssueType))
-                .forEach((key, value) -> {
-                    builder.append(String.format("%s: %s _(%1.0f%%)_, ", key, value.size(), (100.0 * value.size()/ issues.size() )));
+        issues.stream()
+                .collect(Collectors.groupingBy(w -> w.IssueType))
+                .entrySet().stream()
+                .map(a -> new JiraStatisticsItem(
+                        a.getKey(), 
+                        a.getValue().size(), 
+                        a.getValue().stream().mapToDouble(m -> m.StoryPoints).sum(), 
+                        (100.0 * a.getValue().size()/ issues.size()) 
+                ))
+                .sorted(Comparator.comparingDouble(JiraStatisticsItem::getStoryPoints).reversed())
+                .collect(Collectors.toList())
+                .forEach(item -> {
+                     builder.append(String.format("%s: %s _(%1.0f%% - %1.1fsp)_, ", item.Key, item.Count, item.Persentage, item.StoryPoints));
                 });
-        
+
         String result =  builder.toString();
         return result.substring(0, result.length() - 2) + "\n";
     }
@@ -59,22 +70,23 @@ public class JiraStatisticsFormatter implements Callable<String>{
     private String getAssigneeSummary(List<Issue> issues)
     {
         StringBuilder builder = new StringBuilder();
-        
-        Double totalStroyPoints = issues.stream().mapToDouble(i -> i.StoryPoints).sum();
-        
-        
-        Map<String, List<Issue>> group = issues.stream()
+        builder.append("*Assignee*: ");
+        issues.stream()
                 .filter(f -> !"Closed".equals(f.Status))
-                .collect(Collectors.groupingBy(w -> w.Assignee));
-        builder.append(String.format("*Assignee*: %s. ", group.size()));
-        
-        group.forEach((key, value) -> {
-                    builder.append(String.format("%s: %s _(%1.0f%% - %1.1fsp)_, ", 
-                            key, value.size(), 
-                            (100.0 * value.size()/ issues.size()), 
-                            value.stream().filter(m ->  !"Resolved".equals(m.Status)).mapToDouble(m -> m.StoryPoints).sum() ));
+                .collect(Collectors.groupingBy(w -> w.Assignee))
+                .entrySet().stream()
+                .map(a -> new JiraStatisticsItem(
+                        a.getKey(), 
+                        a.getValue().size(), 
+                        a.getValue().stream().filter(m ->  !"Resolved".equals(m.Status)).mapToDouble(m -> m.StoryPoints).sum(), 
+                        (100.0 * a.getValue().size()/ issues.size()) 
+                ))
+                .sorted(Comparator.comparingDouble(JiraStatisticsItem::getStoryPoints).reversed())
+                .collect(Collectors.toList())
+                .forEach(item -> {
+                     builder.append(String.format("%s: %s _(%1.0f%% - %1.1fsp)_, ", item.Key, item.Count, item.Persentage, item.StoryPoints));
                 });
-        
+
         String result =  builder.toString();
         return result.substring(0, result.length() - 2) + "\n";
     }
@@ -82,16 +94,22 @@ public class JiraStatisticsFormatter implements Callable<String>{
     private String getStatusSummary(List<Issue> issues)
     {
         StringBuilder builder = new StringBuilder();
-        
-        Double totalStroyPoints = issues.stream().mapToDouble(i -> i.StoryPoints).sum();
-        
-        builder.append(String.format("*Status*: %s. ", issues.stream().collect(Collectors.groupingBy(w -> w.Status)).size()));
-        
-        issues.stream().collect(Collectors.groupingBy(w -> w.Status))
-                .forEach((key, value) -> {
-                    builder.append(String.format("%s: %s _(%1.0f%%)_, ", key, value.size(), (100.0 * value.size()/ issues.size())));
+        builder.append("*Status*: ");
+        issues.stream()
+                .collect(Collectors.groupingBy(w -> w.Status))
+                .entrySet().stream()
+                .map(a -> new JiraStatisticsItem(
+                        a.getKey(), 
+                        a.getValue().size(), 
+                        a.getValue().stream().mapToDouble(m -> m.StoryPoints).sum(), 
+                        (100.0 * a.getValue().size()/ issues.size()) 
+                ))
+                .sorted(Comparator.comparingDouble(JiraStatisticsItem::getStoryPoints).reversed())
+                .collect(Collectors.toList())
+                .forEach(item -> {
+                     builder.append(String.format("%s: %s _(%1.0f%% - %1.1fsp)_, ", item.Key, item.Count, item.Persentage, item.StoryPoints));
                 });
-        
+
         String result =  builder.toString();
         return result.substring(0, result.length() - 2) + "\n";
     }

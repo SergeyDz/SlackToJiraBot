@@ -9,11 +9,8 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.dispatch.Futures;
 import akka.dispatch.OnSuccess;
-import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import scala.concurrent.Future;
 
@@ -42,7 +39,6 @@ public class BotEngineRunner {
 
             @Override
             public void onSuccess(Iterable<ActorRef> success) throws Throwable {
-                
                 StreamSupport.stream(success.spliterator(), false)
                         .forEach(actor -> {
                             System.out.println("Starting SkackEventListenerActor: " + actor.path().name());
@@ -51,7 +47,7 @@ public class BotEngineRunner {
             }
         }, system.dispatcher());
 
-          Runtime.getRuntime().addShutdownHook(new Thread() {
+        Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {
                 system.shutdown();
