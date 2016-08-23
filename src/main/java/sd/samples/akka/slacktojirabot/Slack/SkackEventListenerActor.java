@@ -48,9 +48,9 @@ public class SkackEventListenerActor extends UntypedActor {
             session.connect();
             
             SlackChannel theChannel = session.findChannelByName(this.channel);
-            senderActor = context().actorOf(Props.create(SlackMessageSenderActor.class, new SlackConnectionInfo(session, theChannel), this.config), "SlackMessageSenderActor");
-            gitActor = context().actorOf(Props.create(GitHubPullRequestActor.class, config), "GitHubActor");
-            jiraActor = context().actorOf(Props.create(JiraFilterActor.class, senderActor, gitActor, config), "JiraFilterActor");
+            senderActor = context().actorOf(Props.create(SlackMessageSenderActor.class, new SlackConnectionInfo(session, theChannel), this.config));
+            gitActor = context().actorOf(Props.create(GitHubPullRequestActor.class, config));
+            jiraActor = context().actorOf(Props.create(JiraFilterActor.class, senderActor, gitActor, config));
            
             
             registeringAListener(session, theChannel);

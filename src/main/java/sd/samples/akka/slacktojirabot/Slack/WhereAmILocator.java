@@ -36,6 +36,10 @@ public class WhereAmILocator {
             {
                 return channel.replace("-private", "");
             }
+             else if(channel.endsWith("-sdzyuban"))
+            {
+                return channel.replace("-sdzyuban", "");
+            }
         }
         else if(message.startsWith("jirabot sprint") && message.split(" ").length > 2)
         {
