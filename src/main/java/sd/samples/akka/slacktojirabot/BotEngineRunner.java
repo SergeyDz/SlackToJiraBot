@@ -12,6 +12,9 @@ import akka.dispatch.OnSuccess;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import scala.concurrent.Future;
 
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
@@ -28,12 +31,10 @@ public class BotEngineRunner {
         BotConfigurationInfo config = new BotConfigurationInfo(args);
         
         ActorSystem system = ActorSystem.create("bot-system");
-        
-        List<Future<ActorRef>> actors = new ArrayList<Future<ActorRef>>();
-        
-        config.Channels.stream().forEach((channel) -> {
-            actors.add(Futures.future(new SlackChannelListener(system, config, channel), system.dispatcher()));
-        });
+       
+        List<Future<ActorRef>> actors = config.Channels.stream()
+                .map(a -> Futures.future(new SlackChannelListener(system, config, a), system.dispatcher()))
+                .collect(Collectors.toList());
         
         Future<Iterable<ActorRef>> result = Futures.sequence(actors, system.dispatcher());
         
@@ -41,12 +42,12 @@ public class BotEngineRunner {
 
             @Override
             public void onSuccess(Iterable<ActorRef> success) throws Throwable {
-                Iterator<ActorRef> i = success.iterator();
-                while (i.hasNext()) {
-                    ActorRef actor = i.next();
-                    System.out.println("Starting SkackEventListenerActor: " + actor.path().name());
-                    actor.tell("start", null);
-                }
+                
+                StreamSupport.stream(success.spliterator(), false)
+                        .forEach(actor -> {
+                            System.out.println("Starting SkackEventListenerActor: " + actor.path().name());
+                            actor.tell("start", null);
+                        });
             }
         }, system.dispatcher());
 
