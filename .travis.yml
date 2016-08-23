@@ -2,3 +2,10 @@ language: java
 
 jdk:
   - oraclejdk8
+  
+deploy:
+  provider: releases
+  file: "SlackTojiraBot-1.0-jar-with-dependencies.jar"
+  skip_cleanup: true
+  on:
+    tags: true
