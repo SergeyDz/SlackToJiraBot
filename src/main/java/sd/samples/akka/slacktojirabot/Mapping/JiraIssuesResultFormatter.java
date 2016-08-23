@@ -6,9 +6,7 @@
 package sd.samples.akka.slacktojirabot.Mapping;
 
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Issue;
 
@@ -57,7 +55,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
         switch(status)
         {
             case "Open": 
-                result = ":umbrella_with_rain_drops:";
+                result = ":cloud:";
                 break;
             case "In Progress": 
                 result = ":pick:";
@@ -67,6 +65,9 @@ public class JiraIssuesResultFormatter implements Callable<String> {
                 break;
             case "Closed": 
                 result = ":sunny:";
+                break;
+             case "Reopened": 
+                result = ":thunder_cloud_and_rain:";
                 break;
         }
         
