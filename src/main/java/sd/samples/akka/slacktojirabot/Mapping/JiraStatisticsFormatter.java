@@ -89,7 +89,7 @@ public class JiraStatisticsFormatter implements Callable<String>{
         
         issues.stream().collect(Collectors.groupingBy(w -> w.Status))
                 .forEach((key, value) -> {
-                    builder.append(String.format("%s: %s _(%1.0f%%)_, ", key, value.size(), (100.0 * value.size()/ issues.size() )));
+                    builder.append(String.format("%s: %s _(%1.0f%%)_, ", key, value.size(), (100.0 * value.size()/ issues.size())));
                 });
         
         String result =  builder.toString();

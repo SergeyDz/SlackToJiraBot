@@ -5,11 +5,17 @@
  */
 package sd.samples.akka.slacktojirabot;
 
-import sd.samples.akka.slacktojirabot.Slack.SkackEventListenerActor;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
-import akka.actor.Props;
+import akka.dispatch.Futures;
+import akka.dispatch.OnSuccess;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import scala.concurrent.Future;
+
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
+import sd.samples.akka.slacktojirabot.Slack.SlackChannelListener;
 
 /**
  *
@@ -23,9 +29,27 @@ public class BotEngineRunner {
         
         ActorSystem system = ActorSystem.create("bot-system");
         
-        ActorRef slackActor = system.actorOf(Props.create(SkackEventListenerActor.class, config, "sdzyuban"), "SlackEventListener");
-        slackActor.tell("start", null);
+        List<Future<ActorRef>> actors = new ArrayList<Future<ActorRef>>();
         
+        config.Channels.stream().forEach((channel) -> {
+            actors.add(Futures.future(new SlackChannelListener(system, config, channel), system.dispatcher()));
+        });
+        
+        Future<Iterable<ActorRef>> result = Futures.sequence(actors, system.dispatcher());
+        
+        result.onSuccess(new OnSuccess<Iterable<ActorRef>>() {
+
+            @Override
+            public void onSuccess(Iterable<ActorRef> success) throws Throwable {
+                Iterator<ActorRef> i = success.iterator();
+                while (i.hasNext()) {
+                    ActorRef actor = i.next();
+                    System.out.println("Starting SkackEventListenerActor: " + actor.path().name());
+                    actor.tell("start", null);
+                }
+            }
+        }, system.dispatcher());
+
           Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override
             public void run() {

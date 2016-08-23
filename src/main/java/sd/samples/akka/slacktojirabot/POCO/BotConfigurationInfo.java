@@ -5,8 +5,13 @@
  */
 package sd.samples.akka.slacktojirabot.POCO;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -14,12 +19,16 @@ import java.util.Map;
  */
 public class BotConfigurationInfo {
     
+    private static Map<String, String> propertiesMap;
+     
     public BotConfigurationInfo(String[] args)
     {
         propertiesMap = new HashMap<>();
+        this.Channels = new ArrayList<String>();
+        
         for (String arg : args) {
             if (arg.contains("=")) {
-                propertiesMap.put(arg.substring(1, arg.indexOf('=')),
+                propertiesMap.put(arg.substring(0, arg.indexOf('=')),
                         arg.substring(arg.indexOf('=') + 1));
             }
         }
@@ -28,6 +37,19 @@ public class BotConfigurationInfo {
         this.JiraUser = propertiesMap.get("jira-user").trim();
         this.JiraPassword = propertiesMap.get("jira-password").trim();
         this.GitHubToken = propertiesMap.get("github-key").trim();
+        
+        String channels = propertiesMap.get("slack-channels").trim();
+        System.out.println("Channels config detected: " + channels);
+        
+        if(channels.isEmpty())
+        {
+            System.err.println("Channels is not defined.");
+        }
+        
+        this.Channels = Arrays.asList(channels.split(","))
+                .stream().map(x -> x.trim())
+                .collect(Collectors.toList());
+        
     }
     
     public String SlackAuthorizationKey; 
@@ -39,6 +61,6 @@ public class BotConfigurationInfo {
     public String JiraBaseUrl = "https://intapp.atlassian.net";
     
     public String GitHubToken;
-    
-    private static Map<String, String> propertiesMap;
+
+    public List<String> Channels;
 }
