@@ -5,11 +5,19 @@
  */
 package sd.samples.akka.slacktojirabot.POCO;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  *
  * @author sdzyuban
  */
 public class Issue {
+    
+    public Issue()
+    {
+        this.Changelog = new ArrayList<>();
+    }
     
     public String Status; 
     
@@ -28,4 +36,6 @@ public class Issue {
     public String Summary;
     
     public Double StoryPoints;
+    
+    public List<JiraChangelogItem> Changelog;
 }

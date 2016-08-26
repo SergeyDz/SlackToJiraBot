@@ -60,6 +60,10 @@ public class BotConfigurationInfo {
     
     public String JiraBaseUrl = "https://intapp.atlassian.net";
     
+    public int ChangelogDays = 2;
+    
+    public boolean HasShowChangeLog = false; 
+    
     public String GitHubToken;
 
     public List<String> Channels;

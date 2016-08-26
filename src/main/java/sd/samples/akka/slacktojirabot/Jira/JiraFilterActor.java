@@ -7,9 +7,9 @@ package sd.samples.akka.slacktojirabot.Jira;
 
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
+import akka.dispatch.OnSuccess;
 import com.atlassian.jira.rest.client.api.JiraRestClient;
 import com.atlassian.jira.rest.client.api.JiraRestClientFactory;
-import com.atlassian.jira.rest.client.api.domain.Filter;
 import com.atlassian.jira.rest.client.api.domain.SearchResult;
 import com.atlassian.jira.rest.client.internal.async.AsynchronousJiraRestClientFactory;
 import com.google.common.util.concurrent.FutureCallback;
@@ -18,7 +18,7 @@ import com.google.common.util.concurrent.ListenableFuture;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang.StringUtils;
@@ -28,6 +28,7 @@ import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.SendMessage;
 
 import sd.samples.akka.slacktojirabot.POCO.*;
+import sd.samples.akka.slacktojirabot.Slack.SlackChannelListener;
 
 /**
  *
@@ -59,18 +60,34 @@ public class JiraFilterActor extends UntypedActor {
 
             Futures.addCallback(searchResults, new FutureCallback<SearchResult>() {
                         @Override
-                        public void onSuccess(SearchResult results) {                           
+                        public void onSuccess(SearchResult results) {    
+                            List<Issue> resWithChnagelog = new ArrayList<>();
                             List<Issue> res = StreamSupport.stream(results.getIssues().spliterator(), false)
-                                    .filter(p -> (p.getProject().getName() == "DevOps" && request.Sprint == "devops") 
-                                            ||  
-                                            (p.getFieldByName("Sprint") != null 
+                                    .filter(p -> p.getFieldByName("Sprint") != null 
                                             && p.getFieldByName("Sprint").getValue() != null
-                                            && StringUtils.containsIgnoreCase(p.getFieldByName("Sprint").getValue().toString(), request.Sprint)
-                                            )
+                                            && StringUtils.containsIgnoreCase(p.getFieldByName("Sprint").getValue().toString(), request.Sprint)  
                                     )
                                     .map(a -> new JiraIssueMapper((config)).apply(a))
                                     .collect(Collectors.toList());
-                            gitActor.tell(new LinkPullRequests(res), self());  
+                            
+                            List<scala.concurrent.Future<Issue>> collect = res.stream()
+                                    .map(a -> akka.dispatch.Futures.future(new JiraItemLoader(restClient, a, config), context().system().dispatcher()))
+                                    .collect(Collectors.toList());
+ 
+                            scala.concurrent.Future<Iterable<Issue>> result = akka.dispatch.Futures.sequence(collect, context().dispatcher());
+        
+                            result.onSuccess(new OnSuccess<Iterable<Issue>>() {
+
+                                @Override
+                                public void onSuccess(Iterable<Issue> success) throws Throwable {
+                                    List<Issue> issues = StreamSupport.stream(success.spliterator(), false)
+                                            .collect(Collectors.toList());
+                                    
+                                    gitActor.tell(new LinkPullRequests(issues), self());
+                                }
+                            }, context().dispatcher());
+
+                            //gitActor.tell(new LinkPullRequests(resWithChnagelog), self());  
                         }
 
                         @Override

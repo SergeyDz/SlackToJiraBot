@@ -32,7 +32,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
         builder.append(new JiraStatisticsFormatter(this.issues).call());
         
         issues.forEach((issue) -> {
-            String line = String.format("%s %s %s %s - <%s|%s> - %s %s \n", 
+            String line = String.format("\n%s %s %s %s - <%s|%s> - %s %s", 
                 getStatusEmoji(issue.Status),
                 getUserPic(issue.Assignee),
                 getIssueType(issue.IssueType),
@@ -41,14 +41,46 @@ public class JiraIssuesResultFormatter implements Callable<String> {
                 issue.Key, 
                 issue.Summary,
                 issue.StoryPoints > 0 ? String.format("_(%s sp)_", issue.StoryPoints) : "");
+             
+            builder.append(line);
             
-             builder.append(line);
+            if(config.HasShowChangeLog)
+            {
+                builder.append(new JiraChangelogFormatter(issue.Changelog, this.config).call());
+            }
         });
         
         return builder.toString();
     }
     
-    private String getStatusEmoji(String status)
+    // Todo: make dynamic loinking with dictionary from Jira.
+    public static String getStatusTextById(String status)
+    {
+        String result = "";
+        
+        switch(status)
+        {
+            case "1": 
+                result = "Open";
+                break;
+            case "3": 
+                result = "In Progress";
+                break;
+            case "5": 
+                result = "Resolved";
+                break;
+            case "6": 
+                result = "Closed";
+                break;
+             case "4": 
+                result = "Reopened";
+                break;
+        }
+        
+        return result;
+    }
+    
+    public static String getStatusEmoji(String status)
     {
         String result = "";
         
@@ -74,7 +106,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
         return result;
     }
     
-    private String getIssueType(String type)
+    public static String getIssueType(String type)
     {
         String result = "";
         
@@ -106,12 +138,12 @@ public class JiraIssuesResultFormatter implements Callable<String> {
         return result;
     }
     
-    private String getUserPic(String user)
+    public static String getUserPic(String user)
     {
-        return String.format("<https://%s/secure/ViewProfile.jspa?name=%s|:%s:>", config.JiraBaseUrl, user, user.replace(".", "_"));
+        return String.format(":%s:", user.replace(".", "_"));
     }
     
-    private String getPullRequests(Issue issue)
+    public static String getPullRequests(Issue issue)
     {
         String result = "";
         

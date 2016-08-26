@@ -6,9 +6,18 @@
 package sd.samples.akka.slacktojirabot.Mapping;
 
 import akka.dispatch.Mapper;
+import com.atlassian.jira.rest.client.api.domain.ChangelogGroup;
+import com.atlassian.jira.rest.client.api.domain.ChangelogItem;
 import com.atlassian.jira.rest.client.api.domain.IssueField;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+import org.joda.time.DateTime;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Issue;
+import sd.samples.akka.slacktojirabot.POCO.JiraChangelogItem;
 
 /**
  *
@@ -37,6 +46,16 @@ public class JiraIssueMapper extends Mapper<com.atlassian.jira.rest.client.api.d
             result.StoryPoints = getStoryPoints(source);
             
             result.Url = config.JiraBaseUrl + "/browse/" + result.Key;
+            
+            if(source.getChangelog() != null)
+            {
+                result.Changelog.addAll(StreamSupport.stream(source.getChangelog().spliterator(), false)
+                        .map(a -> new JiraChangelogMapper(config).apply(a))
+                        .collect(Collectors.toList())
+                        .stream().flatMap(l -> l.stream())
+                        .collect(Collectors.toCollection(ArrayList::new))
+                );
+            }
         }
         
         return result; 
