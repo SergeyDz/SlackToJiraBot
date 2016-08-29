@@ -48,9 +48,14 @@ public class SlackMessageSenderActor extends UntypedActor {
             
             if(source.Attachments != null && source.Attachments.size() > 0)
             {
+                StringBuilder builder = new StringBuilder();
+                
                 source.Attachments.forEach(attachment -> {
                     if(attachment.ChangelogItems != null && !attachment.ChangelogItems.isEmpty())
                     {
+                        
+                        SendUndefinedMessage(builder);
+                        
                         SlackAttachment item = new SlackAttachment();
                         //item.title = "Changelog";
                         item.text = attachment.ChangelogItems;
@@ -59,9 +64,11 @@ public class SlackMessageSenderActor extends UntypedActor {
                     }
                     else
                     {
-                        connection.Session.sendMessage(connection.Channel, attachment.Message);
+                        builder.append(attachment.Message);
                     }
                 });
+                
+                SendUndefinedMessage(builder);
             }
         }
     }
@@ -69,6 +76,16 @@ public class SlackMessageSenderActor extends UntypedActor {
     public void sendUsingPreparedMessage(String message)
     {
         connection.Session.sendMessage(connection.Channel, "Hi, sir! " + message);
+    }
+    
+    private void SendUndefinedMessage(StringBuilder builder)
+    {
+        String text = builder.toString();
+        builder.setLength(0);
+        
+        if(!text.isEmpty()){
+            connection.Session.sendMessage(connection.Channel, text);
+        }
     }
     
 }
