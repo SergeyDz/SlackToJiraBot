@@ -6,7 +6,9 @@
 package sd.samples.akka.slacktojirabot.Slack;
 
 import akka.actor.UntypedActor;
+import com.ullink.slack.simpleslackapi.SlackAttachment;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
+import sd.samples.akka.slacktojirabot.POCO.SendAttachment;
 import sd.samples.akka.slacktojirabot.POCO.SendMessage;
 import sd.samples.akka.slacktojirabot.POCO.SlackConnectionInfo;
 
@@ -38,6 +40,28 @@ public class SlackMessageSenderActor extends UntypedActor {
             else
             {
                 connection.Session.sendMessage(connection.Channel, sendMessage.Message);
+            }
+        } else if(message instanceof SendAttachment){
+            SendAttachment source = (SendAttachment)message;
+            
+            connection.Session.sendMessage(connection.Channel, source.Header);
+            
+            if(source.Attachments != null && source.Attachments.size() > 0)
+            {
+                source.Attachments.forEach(attachment -> {
+                    if(attachment.ChangelogItems != null && !attachment.ChangelogItems.isEmpty())
+                    {
+                        SlackAttachment item = new SlackAttachment();
+                        //item.title = "Changelog";
+                        item.text = attachment.ChangelogItems;
+                        
+                        connection.Session.sendMessage(connection.Channel, attachment.Message, item);
+                    }
+                    else
+                    {
+                        connection.Session.sendMessage(connection.Channel, attachment.Message);
+                    }
+                });
             }
         }
     }

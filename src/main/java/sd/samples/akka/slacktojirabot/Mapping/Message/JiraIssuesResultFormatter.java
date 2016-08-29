@@ -3,10 +3,12 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.Mapping;
+package sd.samples.akka.slacktojirabot.Mapping.Message;
 
+import sd.samples.akka.slacktojirabot.Mapping.Message.JiraChangelogFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
+import sd.samples.akka.slacktojirabot.Mapping.JiraStatisticsFormatter;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Issue;
 
@@ -57,7 +59,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
     public static String getStatusTextById(String status)
     {
         String result = "";
-        
+               
         switch(status)
         {
             case "1": 
@@ -130,6 +132,12 @@ public class JiraIssuesResultFormatter implements Callable<String> {
             case "Epic": 
                 result = ":jira_epic:";
                 break;
+            case "Sub-task": 
+                result = ":sub-task:";
+                break;
+            case "Sub-bug": 
+                result = ":sub-bug:";
+                break;
             default: 
                 result = type;
                 break;
@@ -140,7 +148,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
     
     public static String getUserPic(String user)
     {
-        return String.format(":%s:", user.replace(".", "_"));
+        return String.format(":%s:", user.toLowerCase().replace(".", "_"));
     }
     
     public static String getPullRequests(Issue issue)

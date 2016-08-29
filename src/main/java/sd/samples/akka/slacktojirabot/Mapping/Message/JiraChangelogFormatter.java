@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.Mapping;
+package sd.samples.akka.slacktojirabot.Mapping.Message;
 
 import java.util.List;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
@@ -29,19 +29,19 @@ public class JiraChangelogFormatter{
         
         if(logs != null && logs.size() > 0)
         {
-            builder.append(":newspaper: ");
+            //builder.append(":newspaper: ");
             logs.forEach(log -> {
                         String assignee = JiraIssuesResultFormatter.getUserPic(log.Author);
                         String row = this.convertChangelogFields(log.Field, log.From, log.To);
                         if(!assignee.isEmpty() && !row.isEmpty())
                         {
-                            builder.append(String.format("%s *:* %s *,* ", assignee, row));
+                            builder.append(String.format("%s %s %s \n", log.Created.toString("MM/dd HH:mm"), assignee, row));
                         }
                     });
         }
         String result =  builder.toString();
         
-        return result.length() > 4 ? result.substring(0, result.length() - 4) : result;
+        return result.length() > 2 ? result.substring(0, result.length() - 2) : result;
     }
     
     private String convertChangelogFields(String field, String from, String to)
@@ -51,22 +51,23 @@ public class JiraChangelogFormatter{
         switch(field)
         {
             case "status": 
-                result = String.format("%s->%s", 
+                result = String.format("%s:arrow:%s", 
                         JiraIssuesResultFormatter.getStatusEmoji(JiraIssuesResultFormatter.getStatusTextById(from)),
                         JiraIssuesResultFormatter.getStatusEmoji(JiraIssuesResultFormatter.getStatusTextById(to)));
                 break;
             case "assignee": 
-                result = String.format("%s->%s", 
+                result = String.format("%s:arrow:%s", 
                         JiraIssuesResultFormatter.getUserPic(from),
                         JiraIssuesResultFormatter.getUserPic(to));
                 break;
             case "resolution":
                 break;
             case "Comment":
+            case "comment":
                 result = ":memo: : " + to;
                 break;
             default: 
-                result = String.format(" %s %s->%s", field, from, to);
+                result = String.format(" %s %s:arrow:%s", field, from, to);
                 break;
         }
         
