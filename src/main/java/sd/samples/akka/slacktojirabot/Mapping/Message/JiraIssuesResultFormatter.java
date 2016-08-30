@@ -5,7 +5,6 @@
  */
 package sd.samples.akka.slacktojirabot.Mapping.Message;
 
-import sd.samples.akka.slacktojirabot.Mapping.Message.JiraChangelogFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
 import sd.samples.akka.slacktojirabot.Mapping.JiraStatisticsFormatter;
@@ -45,11 +44,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
                 issue.StoryPoints > 0 ? String.format("_(%s sp)_", issue.StoryPoints) : "");
              
             builder.append(line);
-            
-            if(config.HasShowChangeLog)
-            {
-                builder.append(new JiraChangelogFormatter(issue.Changelog, this.config).call());
-            }
+            builder.append(new JiraChangelogFormatter(issue.Changelog, this.config).call());
         });
         
         return builder.toString();

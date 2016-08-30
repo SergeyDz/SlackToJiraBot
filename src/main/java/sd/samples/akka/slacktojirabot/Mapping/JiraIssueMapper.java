@@ -10,6 +10,7 @@ import com.atlassian.jira.rest.client.api.domain.ChangelogGroup;
 import com.atlassian.jira.rest.client.api.domain.ChangelogItem;
 import com.atlassian.jira.rest.client.api.domain.IssueField;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -44,6 +45,7 @@ public class JiraIssueMapper extends Mapper<com.atlassian.jira.rest.client.api.d
             result.IssueType = source.getIssueType().getName();
             result.Summary = source.getSummary();
             result.StoryPoints = getStoryPoints(source);
+            result.Flagged = getFlagged(source);
             
             result.Url = config.JiraBaseUrl + "/browse/" + result.Key;
             
@@ -74,5 +76,20 @@ public class JiraIssueMapper extends Mapper<com.atlassian.jira.rest.client.api.d
         }
         
         return 0.0;
+    }
+    
+    private List<String> getFlagged(com.atlassian.jira.rest.client.api.domain.Issue issue)
+    {
+        IssueField field = issue.getFieldByName("Flagged");
+        if(field != null)
+        {
+            Object value = field.getValue();
+            if(value != null)
+            {
+                return Arrays.asList(value.toString().split(","));
+            }
+        }
+        
+        return new ArrayList<>();
     }
 }

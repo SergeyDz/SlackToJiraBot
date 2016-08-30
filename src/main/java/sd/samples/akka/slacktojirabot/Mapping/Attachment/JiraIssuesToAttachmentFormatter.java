@@ -40,7 +40,9 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
         issues.forEach((issue) -> {
             Attachment attachment = new Attachment();
             
-            attachment.Message = String.format("\n%s %s %s %s - <%s|%s> - %s %s", 
+            attachment.Message = "\n";
+            attachment.Message += getFlags(issue);
+            attachment.Message += String.format("%s %s %s %s - <%s|%s> - %s %s", 
                 getStatusEmoji(issue.Status),
                 getUserPic(issue.Assignee),
                 getIssueType(issue.IssueType),
@@ -107,6 +109,9 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
              case "Reopened": 
                 result = ":thunder_cloud_and_rain:";
                 break;
+             default:
+                 result = ":grey_question:";
+                 break;
         }
         
         return result;
@@ -165,5 +170,21 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
         }
         
         return result;
+    }
+
+    private String getFlags(Issue issue) {
+        StringBuilder builder = new StringBuilder();
+        
+        if(issue.Flagged != null && !issue.Flagged.isEmpty() && issue.Flagged.stream().anyMatch(a -> a.contains("Definition")))
+        {
+            builder.append(":exclamation: ");
+        }
+        
+        if(issue.Flagged != null && !issue.Flagged.isEmpty() && issue.Flagged.stream().anyMatch(a -> a.contains("Question")))
+        {
+            builder.append(":question: ");
+        }
+        
+        return builder.toString();
     }
 }

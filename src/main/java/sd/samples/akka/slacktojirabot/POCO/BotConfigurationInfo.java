@@ -59,9 +59,7 @@ public class BotConfigurationInfo {
     
     public String JiraBaseUrl = "https://intapp.atlassian.net";
     
-    public int ChangelogDays = 2;
-    
-    public boolean HasShowChangeLog = true; 
+    public int ChangelogDays = 1;
     
     public boolean HasUseSlackAttachment = true;
     

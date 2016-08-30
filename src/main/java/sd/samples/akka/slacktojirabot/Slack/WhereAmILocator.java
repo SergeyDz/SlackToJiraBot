@@ -1,8 +1,5 @@
 package sd.samples.akka.slacktojirabot.Slack;
 
-
-import java.util.concurrent.Callable;
-
 /*
  * To change this license header, choose License Headers in Project Properties.
  * To change this template file, choose Tools | Templates
@@ -26,7 +23,7 @@ public class WhereAmILocator {
 
     public String call() {
         
-        if(message.equals("jirabot sprint"))
+        if(message.equals("jirabot sprint") || message.equals("jirabot sprint status"))
         {
             if(channel.startsWith("team-"))
             {

@@ -57,12 +57,12 @@ public class JiraFilterActor extends UntypedActor {
             final URI jiraServerUri = new URI(config.JiraBaseUrl);
             final JiraRestClient restClient = factory.createWithBasicHttpAuthentication(jiraServerUri, config.JiraUser, config.JiraPassword);
             ListenableFuture<SearchResult> searchResults = restClient.getSearchClient()
-                            .searchJql(String.format("(project = \"Intapp Cloud\") AND Sprint in openSprints() AND labels in (%s) ORDER BY status ASC", request.Sprint));
+                            .searchJql(String.format("(project = \"Intapp Cloud\") AND Sprint in openSprints()  AND labels in (%s) ORDER BY status ASC", request.Sprint));
 
             Futures.addCallback(searchResults, new FutureCallback<SearchResult>() {
                         @Override
                         public void onSuccess(SearchResult results) {    
-                            List<Issue> resWithChnagelog = new ArrayList<>();
+
                             List<Issue> res = StreamSupport.stream(results.getIssues().spliterator(), false)
                                     .filter(p -> p.getFieldByName("Sprint") != null 
                                             && p.getFieldByName("Sprint").getValue() != null
@@ -71,24 +71,29 @@ public class JiraFilterActor extends UntypedActor {
                                     .map(a -> new JiraIssueMapper((config)).apply(a))
                                     .collect(Collectors.toList());
                             
-                            List<scala.concurrent.Future<Issue>> collect = res.stream()
-                                    .map(a -> akka.dispatch.Futures.future(new JiraItemLoader(restClient, a, config), context().system().dispatcher()))
-                                    .collect(Collectors.toList());
- 
-                            scala.concurrent.Future<Iterable<Issue>> result = akka.dispatch.Futures.sequence(collect, context().dispatcher());
-        
-                            result.onSuccess(new OnSuccess<Iterable<Issue>>() {
+                            if(request.HasShowChangeLog)
+                            {
+                                List<scala.concurrent.Future<Issue>> collect = res.stream()
+                                        .map(a -> akka.dispatch.Futures.future(new JiraItemLoader(restClient, a, config), context().system().dispatcher()))
+                                        .collect(Collectors.toList());
 
-                                @Override
-                                public void onSuccess(Iterable<Issue> success) throws Throwable {
-                                    List<Issue> issues = StreamSupport.stream(success.spliterator(), false)
-                                            .collect(Collectors.toList());
-                                    
-                                    gitActor.tell(new LinkPullRequests(issues), self());
-                                }
-                            }, context().dispatcher());
+                                scala.concurrent.Future<Iterable<Issue>> result = akka.dispatch.Futures.sequence(collect, context().dispatcher());
 
-                            //gitActor.tell(new LinkPullRequests(resWithChnagelog), self());  
+                                result.onSuccess(new OnSuccess<Iterable<Issue>>() {
+
+                                    @Override
+                                    public void onSuccess(Iterable<Issue> success) throws Throwable {
+                                        List<Issue> issues = StreamSupport.stream(success.spliterator(), false)
+                                                .collect(Collectors.toList());
+
+                                        gitActor.tell(new LinkPullRequests(issues), self());
+                                    }
+                                }, context().dispatcher());
+                            }
+                            else
+                            {
+                                gitActor.tell(new LinkPullRequests(res), self());  
+                            }
                         }
 
                         @Override

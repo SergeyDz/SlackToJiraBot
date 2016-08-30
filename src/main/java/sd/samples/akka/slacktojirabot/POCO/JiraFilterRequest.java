@@ -15,11 +15,15 @@ public class JiraFilterRequest {
     
     public final String Sprint;
     
-    public JiraFilterRequest(String filterId, String sprint)
+    public final boolean HasShowChangeLog;
+    
+    public JiraFilterRequest(String filterId, String sprint, boolean hasShowChangeLog)
     {
         this.FilterId = filterId;
-        
         this.Sprint = sprint;
+        this.HasShowChangeLog = hasShowChangeLog;
     }
+    
+    
     
 }

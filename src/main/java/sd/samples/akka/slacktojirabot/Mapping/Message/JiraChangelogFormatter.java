@@ -67,7 +67,11 @@ public class JiraChangelogFormatter{
                 result = ":memo: : " + to;
                 break;
             default: 
-                result = String.format(" %s %s:arrow:%s", field, from, to);
+                result = from != null || to != null ? String.format(" %s %s:arrow:%s", 
+                        field, 
+                        from == null ? "" : from, 
+                        to == null ? "" : to)
+                        : field;
                 break;
         }
         

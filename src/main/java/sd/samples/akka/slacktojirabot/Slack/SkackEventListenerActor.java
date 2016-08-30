@@ -79,15 +79,16 @@ public class SkackEventListenerActor extends UntypedActor {
             if(messageContent.startsWith("jirabot sprint"))
             {
                 String team = new WhereAmILocator(messageContent, theChannel.getName()).call();
-                
+
                 if(team.isEmpty())
                 {
                      senderActor.tell(new SendMessage("Sorry, but I can't find your team name. Please try _jirabot sprint jets_."), null);
                 }
                 else
                 {
+                    boolean hasShowChangeLog = messageContent.contains("status");
                     senderActor.tell(new SendMessage("Team found - " + team + "\nRequesting sprint info from Jira. Please wait :clock9:"), null);
-                    jiraActor.tell(new JiraFilterRequest("", team), null);
+                    jiraActor.tell(new JiraFilterRequest("", team, hasShowChangeLog), null);
                 }
             } 
             else if(messageContent.equals("jirabot"))

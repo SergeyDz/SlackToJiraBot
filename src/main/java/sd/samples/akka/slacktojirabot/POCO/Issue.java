@@ -38,4 +38,6 @@ public class Issue {
     public Double StoryPoints;
     
     public List<JiraChangelogItem> Changelog;
+    
+    public List<String> Flagged;
 }
