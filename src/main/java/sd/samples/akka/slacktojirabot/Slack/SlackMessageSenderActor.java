@@ -7,6 +7,7 @@ package sd.samples.akka.slacktojirabot.Slack;
 
 import akka.actor.UntypedActor;
 import com.ullink.slack.simpleslackapi.SlackAttachment;
+import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.SendAttachment;
 import sd.samples.akka.slacktojirabot.POCO.SendMessage;
@@ -20,11 +21,14 @@ public class SlackMessageSenderActor extends UntypedActor {
 
     private final SlackConnectionInfo connection;
     private final BotConfigurationInfo config;
+    private final  SlackChatConfiguration slackConfig;
     
     public SlackMessageSenderActor(SlackConnectionInfo connection, BotConfigurationInfo config)
     {
         this.connection = connection;
         this.config = config;
+        this.slackConfig = SlackChatConfiguration.getConfiguration();
+        slackConfig.withName("Jirabot");
     }
     
     @Override
@@ -32,19 +36,14 @@ public class SlackMessageSenderActor extends UntypedActor {
         if(message instanceof SendMessage){
             SendMessage sendMessage = (SendMessage)message;
             
-            if(sendMessage.Message.startsWith("bot"))
-            {
-                this.sendUsingPreparedMessage(sendMessage.Message);
-            }
+            connection.Session.sendMessage(connection.Channel, sendMessage.Message, new SlackAttachment(), this.slackConfig);
             
-            else
-            {
-                connection.Session.sendMessage(connection.Channel, sendMessage.Message);
-            }
         } else if(message instanceof SendAttachment){
             SendAttachment source = (SendAttachment)message;
-            
-            connection.Session.sendMessage(connection.Channel, source.Header);
+            SlackAttachment header = new SlackAttachment();
+            header.color = "#267F00";
+            header.text = source.Header;
+            connection.Session.sendMessage(connection.Channel, "Sprint statistics.", header, this.slackConfig);
             
             if(source.Attachments != null && source.Attachments.size() > 0)
             {
@@ -60,7 +59,7 @@ public class SlackMessageSenderActor extends UntypedActor {
                         //item.title = "Changelog";
                         item.text = attachment.ChangelogItems;
                         
-                        connection.Session.sendMessage(connection.Channel, attachment.Message, item);
+                        connection.Session.sendMessage(connection.Channel, attachment.Message, item, slackConfig);
                     }
                     else
                     {
@@ -72,19 +71,14 @@ public class SlackMessageSenderActor extends UntypedActor {
             }
         }
     }
-    
-    public void sendUsingPreparedMessage(String message)
-    {
-        connection.Session.sendMessage(connection.Channel, "Hi, sir! " + message);
-    }
-    
+       
     private void SendUndefinedMessage(StringBuilder builder)
     {
         String text = builder.toString();
         builder.setLength(0);
         
         if(!text.isEmpty()){
-            connection.Session.sendMessage(connection.Channel, text);
+            connection.Session.sendMessage(connection.Channel, text, new SlackAttachment(), this.slackConfig);
         }
     }
     
