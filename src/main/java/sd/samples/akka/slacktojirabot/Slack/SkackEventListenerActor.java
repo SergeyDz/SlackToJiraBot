@@ -14,12 +14,17 @@ import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
+import java.io.IOException;
 import sd.samples.akka.slacktojirabot.GitHub.GitHubPullRequestActor;
 import sd.samples.akka.slacktojirabot.Jira.JiraFilterActor;
+import sd.samples.akka.slacktojirabot.Jira.JiraFilterMessage;
+import sd.samples.akka.slacktojirabot.Jira.JiraSprintActor;
+import sd.samples.akka.slacktojirabot.Jira.JiraSprintMessage;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.JiraFilterRequest;
-import sd.samples.akka.slacktojirabot.POCO.SendMessage;
-import sd.samples.akka.slacktojirabot.POCO.SlackConnectionInfo;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterRequest;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SlackConnectionInfo;
 
 /**
  *
@@ -32,37 +37,43 @@ public class SkackEventListenerActor extends UntypedActor {
     
     private ActorRef senderActor;
     private ActorRef jiraActor;
-    private ActorRef gitActor;
+    private final ActorRef gitActor;
+    private final ActorRef jiraAgileActor;
     
-    public SkackEventListenerActor(BotConfigurationInfo config, String channel)
+    private SlackSession session;
+    
+    public SkackEventListenerActor(BotConfigurationInfo config, String channel) throws IOException
     {
         this.config = config;
         this.channel = channel;
+
+        gitActor = context().actorOf(Props.create(GitHubPullRequestActor.class, config));
+        jiraAgileActor = context().actorOf(Props.create(JiraSprintActor.class, config));
     }
     
     @Override
     public void onReceive(Object message) throws Exception {
         if(message instanceof String && "start".equals(message))
         {
-            SlackSession session = SlackSessionFactory.createWebSocketSlackSession(this.config.SlackAuthorizationKey);
+            session = SlackSessionFactory.createWebSocketSlackSession(this.config.SlackAuthorizationKey);
             session.connect();
-            
+
             SlackChannel theChannel = session.findChannelByName(this.channel);
             senderActor = context().actorOf(Props.create(SlackMessageSenderActor.class, new SlackConnectionInfo(session, theChannel), this.config));
-            gitActor = context().actorOf(Props.create(GitHubPullRequestActor.class, config));
             jiraActor = context().actorOf(Props.create(JiraFilterActor.class, senderActor, gitActor, config));
-           
-            
+
             registeringAListener(session, theChannel);
-            
-            // delete after implement
-            gitActor.tell("start", null);
             
             System.out.println("Connection success");
         } 
         else if(message instanceof SendMessage)
         {
             senderActor.tell(message, null);
+        }
+        else if(message instanceof JiraFilterMessage)
+        {
+            JiraFilterMessage filter = (JiraFilterMessage)message;
+            jiraActor.tell(new JiraFilterMessage(filter.Sprint, filter.HasShowChangeLog), null);
         }
     }
     
@@ -74,7 +85,6 @@ public class SkackEventListenerActor extends UntypedActor {
                 return; 
             }
             String messageContent = event.getMessageContent();
-            SlackUser messageSender = event.getSender();
             
             if(messageContent.startsWith("jirabot sprint"))
             {
@@ -88,7 +98,7 @@ public class SkackEventListenerActor extends UntypedActor {
                 {
                     boolean hasShowChangeLog = messageContent.contains("status");
                     senderActor.tell(new SendMessage("Team found - " + team + "\nRequesting sprint info from Jira. Please wait :clock9:"), null);
-                    jiraActor.tell(new JiraFilterRequest("", team, hasShowChangeLog), null);
+                    jiraAgileActor.tell(new JiraSprintMessage(team, hasShowChangeLog), self());
                 }
             } 
             else if(messageContent.equals("jirabot"))

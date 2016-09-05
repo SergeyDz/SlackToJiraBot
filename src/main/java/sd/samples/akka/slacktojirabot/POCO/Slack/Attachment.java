@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.POCO;
+package sd.samples.akka.slacktojirabot.POCO.Slack;
 
 import java.util.List;
 
@@ -11,9 +11,9 @@ import java.util.List;
  *
  * @author sdzyuban
  */
-public class SendAttachment {
+public class Attachment {
     
-    public String Header;
+    public String Message;
     
-    public List<Attachment> Attachments;
+    public String ChangelogItems;
 }

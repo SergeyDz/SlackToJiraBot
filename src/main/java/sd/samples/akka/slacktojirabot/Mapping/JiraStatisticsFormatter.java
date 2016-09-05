@@ -11,8 +11,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import sd.samples.akka.slacktojirabot.POCO.Issue;
-import sd.samples.akka.slacktojirabot.POCO.JiraStatisticsItem;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraStatisticsItem;
 
 /**
  *

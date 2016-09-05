@@ -13,8 +13,8 @@ import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.PullRequestService;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.Issue;
-import sd.samples.akka.slacktojirabot.POCO.LinkPullRequests;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 
 /**
  *

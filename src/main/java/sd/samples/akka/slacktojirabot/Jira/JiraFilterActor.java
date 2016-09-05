@@ -5,6 +5,9 @@
  */
 package sd.samples.akka.slacktojirabot.Jira;
 
+import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterRequest;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.dispatch.OnSuccess;
@@ -16,9 +19,7 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import org.apache.commons.lang.StringUtils;
@@ -26,10 +27,9 @@ import sd.samples.akka.slacktojirabot.Mapping.Attachment.JiraIssuesToAttachmentF
 import sd.samples.akka.slacktojirabot.Mapping.JiraIssueMapper;
 import sd.samples.akka.slacktojirabot.Mapping.Message.JiraIssuesResultFormatter;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.SendMessage;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
 
 import sd.samples.akka.slacktojirabot.POCO.*;
-import sd.samples.akka.slacktojirabot.Slack.SlackChannelListener;
 
 /**
  *
@@ -50,24 +50,21 @@ public class JiraFilterActor extends UntypedActor {
     
     @Override
     public void onReceive(Object message) throws Exception {
-        if(message instanceof JiraFilterRequest)
+        if(message instanceof JiraFilterMessage)
         {
-            JiraFilterRequest request = (JiraFilterRequest)message;
+            JiraFilterMessage request = (JiraFilterMessage)message;
             JiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
             final URI jiraServerUri = new URI(config.JiraBaseUrl);
             final JiraRestClient restClient = factory.createWithBasicHttpAuthentication(jiraServerUri, config.JiraUser, config.JiraPassword);
+
             ListenableFuture<SearchResult> searchResults = restClient.getSearchClient()
-                            .searchJql(String.format("(project = \"Intapp Cloud\") AND Sprint in openSprints()  AND labels in (%s) ORDER BY status ASC", request.Sprint));
+                            .searchJql(String.format("(project = \"Intapp Cloud\") AND Sprint=%s  ORDER BY status ASC", request.Sprint.id));
 
             Futures.addCallback(searchResults, new FutureCallback<SearchResult>() {
                         @Override
                         public void onSuccess(SearchResult results) {    
 
                             List<Issue> res = StreamSupport.stream(results.getIssues().spliterator(), false)
-                                    .filter(p -> p.getFieldByName("Sprint") != null 
-                                            && p.getFieldByName("Sprint").getValue() != null
-                                            && StringUtils.containsIgnoreCase(p.getFieldByName("Sprint").getValue().toString(), request.Sprint)  
-                                    )
                                     .map(a -> new JiraIssueMapper((config)).apply(a))
                                     .collect(Collectors.toList());
                             

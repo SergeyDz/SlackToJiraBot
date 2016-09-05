@@ -12,7 +12,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Days;
 import org.joda.time.Minutes;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.JiraChangelogItem;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
 
 /**
  *

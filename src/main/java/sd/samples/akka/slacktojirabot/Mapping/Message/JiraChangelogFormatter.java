@@ -7,7 +7,7 @@ package sd.samples.akka.slacktojirabot.Mapping.Message;
 
 import java.util.List;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.JiraChangelogItem;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
 
 /**
  *
@@ -61,6 +61,7 @@ public class JiraChangelogFormatter{
                         JiraIssuesResultFormatter.getUserPic(to));
                 break;
             case "resolution":
+            case "Rank":
                 break;
             case "Comment":
             case "comment":

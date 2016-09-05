@@ -10,10 +10,10 @@ import sd.samples.akka.slacktojirabot.Mapping.Message.JiraChangelogFormatter;
 import java.util.List;
 import java.util.concurrent.Callable;
 import sd.samples.akka.slacktojirabot.Mapping.JiraStatisticsFormatter;
-import sd.samples.akka.slacktojirabot.POCO.Attachment;
+import sd.samples.akka.slacktojirabot.POCO.Slack.Attachment;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.Issue;
-import sd.samples.akka.slacktojirabot.POCO.SendAttachment;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SendAttachment;
 
 /**
  *

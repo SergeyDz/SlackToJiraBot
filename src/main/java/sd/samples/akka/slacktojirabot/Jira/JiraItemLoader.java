@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.concurrent.Callable;
 import sd.samples.akka.slacktojirabot.Mapping.JiraIssueMapper;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 
 /**
  *

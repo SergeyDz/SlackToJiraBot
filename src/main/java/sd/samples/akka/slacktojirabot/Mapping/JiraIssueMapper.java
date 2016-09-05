@@ -17,8 +17,8 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import org.joda.time.DateTime;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.Issue;
-import sd.samples.akka.slacktojirabot.POCO.JiraChangelogItem;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
 
 /**
  *

@@ -9,7 +9,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import sd.samples.akka.slacktojirabot.Mapping.JiraStatisticsFormatter;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 
 /**
  *
@@ -92,10 +92,10 @@ public class JiraIssuesResultFormatter implements Callable<String> {
             case "Resolved": 
                 result = ":resolved:";
                 break;
-            case "closed": 
+            case "Closed": 
                 result = ":closed:";
                 break;
-            case "reopened": 
+            case "Reopened": 
                 result = ":reopened:";
                 break;
             default:
@@ -146,7 +146,14 @@ public class JiraIssuesResultFormatter implements Callable<String> {
     
     public static String getUserPic(String user)
     {
-        return String.format(":%s:", user.toLowerCase().replace(".", "_"));
+        if(user != null)
+        {
+        
+            return String.format(":%s:", user.toLowerCase().replace(".", "_"));
+        }else
+        {
+            return ":unassigned:";
+        }
     }
     
     public static String getPullRequests(Issue issue)

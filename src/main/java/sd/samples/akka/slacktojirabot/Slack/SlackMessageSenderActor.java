@@ -11,9 +11,9 @@ import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.SendAttachment;
-import sd.samples.akka.slacktojirabot.POCO.SendMessage;
-import sd.samples.akka.slacktojirabot.POCO.SlackConnectionInfo;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SendAttachment;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SlackConnectionInfo;
 
 /**
  *
