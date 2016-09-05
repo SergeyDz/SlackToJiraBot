@@ -8,6 +8,8 @@ package sd.samples.akka.slacktojirabot.Slack;
 import akka.actor.UntypedActor;
 import com.ullink.slack.simpleslackapi.SlackAttachment;
 import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration;
+import java.util.ArrayList;
+import java.util.Arrays;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.SendAttachment;
 import sd.samples.akka.slacktojirabot.POCO.SendMessage;
@@ -43,6 +45,8 @@ public class SlackMessageSenderActor extends UntypedActor {
             SlackAttachment header = new SlackAttachment();
             header.color = "#267F00";
             header.text = source.Header;
+            header.markdown_in = Arrays.asList("text", "pretext");
+            
             connection.Session.sendMessage(connection.Channel, "Sprint statistics.", header, this.slackConfig);
             
             if(source.Attachments != null && source.Attachments.size() > 0)

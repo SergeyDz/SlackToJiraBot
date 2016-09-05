@@ -95,19 +95,19 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
         switch(status)
         {
             case "Open": 
-                result = ":cloud:";
+                result = ":open:";
                 break;
             case "In Progress": 
-                result = ":pick:";
+                result = ":inprogress:";
                 break;
             case "Resolved": 
-                result = ":partly_sunny:";
+                result = ":resolved:";
                 break;
             case "Closed": 
-                result = ":sunny:";
+                result = ":closed:";
                 break;
              case "Reopened": 
-                result = ":thunder_cloud_and_rain:";
+                result = ":reopened:";
                 break;
              default:
                  result = ":grey_question:";

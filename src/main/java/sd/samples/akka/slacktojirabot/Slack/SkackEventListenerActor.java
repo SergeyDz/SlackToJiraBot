@@ -93,7 +93,12 @@ public class SkackEventListenerActor extends UntypedActor {
             } 
             else if(messageContent.equals("jirabot"))
             {
-                senderActor.tell(new SendMessage("Commands: _jirabot sprint_"), null);
+                String commands = String.format("Commands: \n%s \n%s \n%s \n%s", 
+                        "_jirabot sprint_", 
+                        "_jirabot sprint *team*_",
+                        "_jirabot sprint status_",
+                        "_jirabot sprint *team*_ status");
+                senderActor.tell(new SendMessage(commands), null);
             }
             else if(messageContent.startsWith("jirabot"))
             {

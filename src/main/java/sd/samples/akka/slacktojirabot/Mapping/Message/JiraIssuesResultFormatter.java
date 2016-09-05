@@ -84,20 +84,23 @@ public class JiraIssuesResultFormatter implements Callable<String> {
         switch(status)
         {
             case "Open": 
-                result = ":cloud:";
+                result = ":open:";
                 break;
             case "In Progress": 
-                result = ":pick:";
+                result = ":inprogress:";
                 break;
             case "Resolved": 
-                result = ":partly_sunny:";
+                result = ":resolved:";
                 break;
-            case "Closed": 
-                result = ":sunny:";
+            case "closed": 
+                result = ":closed:";
                 break;
-             case "Reopened": 
-                result = ":thunder_cloud_and_rain:";
+            case "reopened": 
+                result = ":reopened:";
                 break;
+            default:
+                 result = ":grey_question:";
+                 break;
         }
         
         return result;
