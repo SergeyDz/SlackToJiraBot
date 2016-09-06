@@ -6,12 +6,18 @@
 package sd.samples.akka.slacktojirabot.GitHub;
 
 import akka.actor.UntypedActor;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryId;
 import org.eclipse.egit.github.core.service.PullRequestService;
+import scala.annotation.serializable;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
@@ -23,10 +29,29 @@ import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 public class GitHubPullRequestActor extends UntypedActor {    
     
     private final BotConfigurationInfo config;
+    
+    private final LoadingCache<String, List<PullRequest>> cachedPullRequests;
 
     public GitHubPullRequestActor(BotConfigurationInfo config)
     {
         this.config = config;
+        
+        RepositoryId repo = new RepositoryId("intappx", "intappcloud");
+        PullRequestService service = new PullRequestService();
+        service.getClient().setOAuth2Token(config.GitHubToken);
+        
+        cachedPullRequests = CacheBuilder.newBuilder()
+        .concurrencyLevel(4)
+        .weakKeys()
+        .maximumSize(10000)
+        .expireAfterWrite(10, TimeUnit.MINUTES)
+        .build(
+            new CacheLoader<String, List<PullRequest>>() {
+              @Override
+              public List<PullRequest> load(String status) throws Exception {
+                return service.getPullRequests(repo, status);
+              }
+            });
     }
     
     @Override
@@ -34,26 +59,23 @@ public class GitHubPullRequestActor extends UntypedActor {
         if(message instanceof LinkPullRequests)
         {
             List<Issue> issues = ((LinkPullRequests)message).getIssues();
-            
-            RepositoryId repo = new RepositoryId("intappx", "intappcloud");
-            PullRequestService service = new PullRequestService();
-            service.getClient().setOAuth2Token(config.GitHubToken);
-
-            List<PullRequest> pullRequests = service.getPullRequests(repo, "Open");
+            List<PullRequest> pullRequests = cachedPullRequests.get("Open");
 
             issues.stream().forEach((issue) -> {
                 Optional<PullRequest> matches = pullRequests
                         .stream()
                         .filter(p -> 
                                 StringUtils.containsIgnoreCase(p.getTitle(), issue.Key)
-                                        || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", " "))
-                                        || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", ""))
+                                || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", " "))
+                                || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", ""))
                         )
                         .findFirst();
+                
                 if (matches.isPresent()) {
                     issue.IsPullRequest = true;
                     issue.PullRequestUrl = matches.get().getHtmlUrl();
                 }
+                
             });
             
             // call Jira Actor back
