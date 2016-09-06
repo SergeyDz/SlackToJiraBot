@@ -44,7 +44,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
                 issue.StoryPoints > 0 ? String.format("_(%s sp)_", issue.StoryPoints) : "");
              
             builder.append(line);
-            builder.append(new JiraChangelogFormatter(issue.Changelog, this.config).call());
+            builder.append(new JiraChangelogFormatter(issue, this.config).call());
         });
         
         return builder.toString();

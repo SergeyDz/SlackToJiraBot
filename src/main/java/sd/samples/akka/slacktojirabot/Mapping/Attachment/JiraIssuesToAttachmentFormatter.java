@@ -52,7 +52,7 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
                 issue.Summary,
                 issue.StoryPoints > 0 ? String.format("_(%s sp)_", issue.StoryPoints) : "");
             
-            attachment.ChangelogItems = new JiraChangelogFormatter(issue.Changelog, this.config).call();
+            attachment.ChangelogItems = new JiraChangelogFormatter(issue, this.config).call();
             
             attachments.Attachments.add(attachment);
             

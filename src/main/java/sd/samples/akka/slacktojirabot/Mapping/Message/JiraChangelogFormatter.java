@@ -5,9 +5,16 @@
  */
 package sd.samples.akka.slacktojirabot.Mapping.Message;
 
+import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import org.joda.time.DateTime;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
+import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
 
 /**
  *
@@ -16,17 +23,23 @@ import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
 public class JiraChangelogFormatter{
 
     private final List<JiraChangelogItem> logs;
+    private final List<Commit> commits;
     private final BotConfigurationInfo config;
     
-    public  JiraChangelogFormatter(List<JiraChangelogItem> logs, BotConfigurationInfo config)
+    private Map<DateTime, String> results;
+    
+    public  JiraChangelogFormatter(Issue issue, BotConfigurationInfo config)
     {
-        this.logs = logs;
+        this.logs = issue.Changelog;
+        this.commits = issue.Commits;
         this.config = config;
     }
     
     public String call() {
-        StringBuilder builder = new StringBuilder();
         
+        results = new HashMap<>();
+        
+
         if(logs != null && logs.size() > 0)
         {
             //builder.append(":newspaper: ");
@@ -35,12 +48,37 @@ public class JiraChangelogFormatter{
                         String row = this.convertChangelogFields(log.Field, log.From, log.To);
                         if(!assignee.isEmpty() && !row.isEmpty())
                         {
-                            builder.append(String.format("%s %s %s \n", log.Created.toString("MM/dd HH:mm"), assignee, row));
+                            results.put(log.Created, String.format("%s %s %s \n", log.Created.toString("MM/dd HH:mm"), assignee, row));
                         }
                     });
         }
-        String result =  builder.toString();
         
+        if(commits != null && commits.size() > 0)
+        {
+            //builder.append(":newspaper: ");
+            commits.forEach(commit -> {
+                        results.put(new DateTime(commit.CreatedOn),
+                                String.format("%s %s-<%s> [%s]-<%s|%s> %s \n", 
+                                "master".equals(commit.Branch) ? ":github_green:" : ":github_grey:",
+                                new DateTime(commit.CreatedOn).toString("MM/dd HH:mm"),
+                                commit.Author,
+                                commit.Branch.length() > 9 ? commit.Branch.substring(0, 9) : commit.Branch,
+                                commit.Url.replace("api.", "").replace("/repos", "").replace("commits", "commit"),
+                                commit.Id.isEmpty() ? "empty" : commit.Id.substring(0, 4),
+                                commit.Message.length() > 60 ?  commit.Message.substring(0, 60) + " ..." : commit.Message
+                        ));
+            });
+        }
+        
+        
+        StringBuilder builder = new StringBuilder();
+        
+        new TreeMap<>(results)
+        .forEach((key, value) -> {
+            builder.append(value);
+        });
+        
+        String result =  builder.toString();
         return result.length() > 2 ? result.substring(0, result.length() - 2) : result;
     }
     

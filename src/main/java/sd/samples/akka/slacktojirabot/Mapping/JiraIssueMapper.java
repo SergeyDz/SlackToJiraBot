@@ -6,19 +6,14 @@
 package sd.samples.akka.slacktojirabot.Mapping;
 
 import akka.dispatch.Mapper;
-import com.atlassian.jira.rest.client.api.domain.ChangelogGroup;
-import com.atlassian.jira.rest.client.api.domain.ChangelogItem;
 import com.atlassian.jira.rest.client.api.domain.IssueField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
-import org.joda.time.DateTime;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
 
 /**
  *

@@ -14,11 +14,14 @@ import java.util.List;
  */
 public class LinkPullRequests {
     
-    private List<Issue> issues; 
+    private final List<Issue> issues; 
     
-    public LinkPullRequests(List<Issue> issues)
+    public final boolean HasShowChangeLog;  
+    
+    public LinkPullRequests(List<Issue> issues, boolean hasShowChangeLog)
     {
         this.issues = issues;
+        this.HasShowChangeLog = hasShowChangeLog;
     }
     
     public List<Issue> getIssues()

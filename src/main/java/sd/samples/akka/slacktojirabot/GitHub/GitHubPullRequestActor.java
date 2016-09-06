@@ -6,20 +6,32 @@
 package sd.samples.akka.slacktojirabot.GitHub;
 
 import akka.actor.UntypedActor;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
 import org.eclipse.egit.github.core.PullRequest;
+import org.eclipse.egit.github.core.RepositoryBranch;
+import org.eclipse.egit.github.core.RepositoryCommit;
 import org.eclipse.egit.github.core.RepositoryId;
+import org.eclipse.egit.github.core.client.PageIterator;
+import org.eclipse.egit.github.core.service.CommitService;
 import org.eclipse.egit.github.core.service.PullRequestService;
-import scala.annotation.serializable;
+import org.eclipse.egit.github.core.service.RepositoryService;
+import org.joda.time.DateTime;
+import org.joda.time.Days;
+import sd.samples.akka.slacktojirabot.Mapping.CommitMapper;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 
 /**
@@ -31,14 +43,37 @@ public class GitHubPullRequestActor extends UntypedActor {
     private final BotConfigurationInfo config;
     
     private final LoadingCache<String, List<PullRequest>> cachedPullRequests;
+    private final LoadingCache<String, List<RepositoryCommit>> cachedCommits;
+    private final LoadingCache<String, List<RepositoryBranch>> cachedBranches;
 
     public GitHubPullRequestActor(BotConfigurationInfo config)
     {
         this.config = config;
         
         RepositoryId repo = new RepositoryId("intappx", "intappcloud");
-        PullRequestService service = new PullRequestService();
-        service.getClient().setOAuth2Token(config.GitHubToken);
+        PullRequestService pullRequestService = new PullRequestService();
+        pullRequestService.getClient().setOAuth2Token(config.GitHubToken);
+        
+        CommitService commitService  = new CommitService();
+        commitService.getClient().setOAuth2Token(config.GitHubToken);
+        
+        RepositoryService repositoryService = new RepositoryService();
+        repositoryService.getClient().setOAuth2Token(config.GitHubToken);
+        
+        cachedBranches = CacheBuilder.newBuilder()
+        .concurrencyLevel(4)
+        .weakKeys()
+        .maximumSize(10000)
+        .expireAfterWrite(10, TimeUnit.MINUTES)
+        .build(
+            new CacheLoader<String, List<RepositoryBranch>>() {
+              @Override
+              public List<RepositoryBranch> load(String status) throws Exception {
+                  List<RepositoryBranch> branches = repositoryService.getBranches(repo);
+                  System.err.println("CacheLoader<Branches>(). Found: " + branches.size());
+                  return branches;
+              }
+            });
         
         cachedPullRequests = CacheBuilder.newBuilder()
         .concurrencyLevel(4)
@@ -49,7 +84,26 @@ public class GitHubPullRequestActor extends UntypedActor {
             new CacheLoader<String, List<PullRequest>>() {
               @Override
               public List<PullRequest> load(String status) throws Exception {
-                return service.getPullRequests(repo, status);
+                return pullRequestService.getPullRequests(repo, status);
+              }
+        });
+        
+        cachedCommits = CacheBuilder.newBuilder()
+        .concurrencyLevel(4)
+        .weakKeys()
+        .maximumSize(10000)
+        .expireAfterWrite(10, TimeUnit.MINUTES)
+        .build(
+            new CacheLoader<String, List<RepositoryCommit>>() {
+              @Override
+              public List<RepositoryCommit> load(String key) throws Exception {
+                System.out.print("CacheLoader<Commits>(" + key + "). Found: ");
+                    PageIterator<RepositoryCommit> page = commitService.pageCommits(repo, key, "", 10);
+                    if(page.hasNext())
+                    {
+                        return new ArrayList<>(page.next());
+                    }
+                    return null;
               }
             });
     }
@@ -58,28 +112,92 @@ public class GitHubPullRequestActor extends UntypedActor {
     public void onReceive(Object message) throws Exception {
         if(message instanceof LinkPullRequests)
         {
-            List<Issue> issues = ((LinkPullRequests)message).getIssues();
-            List<PullRequest> pullRequests = cachedPullRequests.get("Open");
+            LinkPullRequests request = (LinkPullRequests)message;
+            
+            List<Issue> issues = request.getIssues();
+            
+            if(request.HasShowChangeLog)
+            {
+                List<PullRequest> pullRequests = cachedPullRequests.get("Open");
+                
+                issues.stream().forEach((issue) -> {
+                    Optional<PullRequest> matches = pullRequests
+                            .stream()
+                            .filter(p -> 
+                                    StringUtils.containsIgnoreCase(p.getTitle(), issue.Key)
+                                    || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", " "))
+                                    || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", ""))
+                            )
+                            .findFirst();
 
-            issues.stream().forEach((issue) -> {
-                Optional<PullRequest> matches = pullRequests
-                        .stream()
-                        .filter(p -> 
-                                StringUtils.containsIgnoreCase(p.getTitle(), issue.Key)
-                                || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", " "))
-                                || StringUtils.containsIgnoreCase(p.getTitle(), issue.Key.replace("-", ""))
-                        )
-                        .findFirst();
+                    if (matches.isPresent()) {
+                        issue.IsPullRequest = true;
+                        issue.PullRequestUrl = matches.get().getHtmlUrl();
+                    }
+
+                });
+            }
+            
+            if(request.HasShowChangeLog)
+            {
+                List<RepositoryBranch> branches = cachedBranches.get("Active");
                 
-                if (matches.isPresent()) {
-                    issue.IsPullRequest = true;
-                    issue.PullRequestUrl = matches.get().getHtmlUrl();
-                }
+                issues.stream().forEach((issue) -> {
+                    branches
+                            .stream()
+                            .filter(p -> 
+                                    StringUtils.containsIgnoreCase(p.getName(), issue.Key)
+                                    || StringUtils.containsIgnoreCase(p.getName(), issue.Key.replace("-", " "))
+                                    || StringUtils.containsIgnoreCase(p.getName(), issue.Key.replace("-", ""))
+                                    || p.getName().contains("master")
+                            )
+                            .collect(Collectors.toList())
+                            .forEach(a -> {
+                                try {
+                                    System.out.println("Branch detected: " + a.getName());
+                                    List<Commit> commits = cachedCommits.get(a.getName())
+                                            .stream()
+                                            .map(m -> {return new CommitMapper(a.getName()).apply(m);})
+                                            .filter(p -> 
+                                                    (StringUtils.containsIgnoreCase(p.Message, issue.Key)
+                                                    || StringUtils.containsIgnoreCase(p.Message, issue.Key.replace("-", " "))
+                                                    || StringUtils.containsIgnoreCase(p.Message, issue.Key.replace("-", "")))
+                                                    && Days.daysBetween(new DateTime(p.CreatedOn), new DateTime()).isLessThan(Days.days(config.ChangelogDays))
+                                            )
+                                            .collect(Collectors.toList());
+                                    issue.Commits.addAll(commits);
+                                } 
+                                catch (ExecutionException ex) {
+                                    System.err.println(ex);
+                                    Logger.getLogger(GitHubPullRequestActor.class.getName()).log(Level.SEVERE, null, ex);
+                                }
+                            });
+                    
+                });
                 
-            });
+//                List<Commit> commits = cachedCommits.get("All")
+//                        .stream()
+//                        .map(m -> {return new CommitMapper().apply(m);})
+//                        .collect(Collectors.toList());
+//                
+//                issues.stream().forEach((issue) -> {
+//                    Optional<Commit> matches = commits
+//                            .stream()
+//                            .filter(p -> 
+//                                    StringUtils.containsIgnoreCase(p.Message, issue.Key)
+//                                    || StringUtils.containsIgnoreCase(p.Message, issue.Key.replace("-", " "))
+//                                    || StringUtils.containsIgnoreCase(p.Message, issue.Key.replace("-", ""))
+//                            )
+//                            .findFirst();
+//
+//                    if (matches.isPresent()) {
+//                        issue.Commits.add(matches.get());
+//                    }
+//                });
+            }
             
             // call Jira Actor back
-            getSender().tell(new LinkPullRequests(issues), null);
+            getSender().tell(new LinkPullRequests(issues, request.HasShowChangeLog), null);
             
         }
         else

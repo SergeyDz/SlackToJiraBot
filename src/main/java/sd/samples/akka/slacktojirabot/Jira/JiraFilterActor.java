@@ -7,7 +7,6 @@ package sd.samples.akka.slacktojirabot.Jira;
 
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterRequest;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import akka.dispatch.OnSuccess;
@@ -22,14 +21,12 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import org.apache.commons.lang.StringUtils;
 import sd.samples.akka.slacktojirabot.Mapping.Attachment.JiraIssuesToAttachmentFormatter;
 import sd.samples.akka.slacktojirabot.Mapping.JiraIssueMapper;
 import sd.samples.akka.slacktojirabot.Mapping.Message.JiraIssuesResultFormatter;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
 
-import sd.samples.akka.slacktojirabot.POCO.*;
 
 /**
  *
@@ -83,13 +80,13 @@ public class JiraFilterActor extends UntypedActor {
                                         List<Issue> issues = StreamSupport.stream(success.spliterator(), false)
                                                 .collect(Collectors.toList());
 
-                                        gitActor.tell(new LinkPullRequests(issues), self());
+                                        gitActor.tell(new LinkPullRequests(issues, ((JiraFilterMessage) message).HasShowChangeLog), self());
                                     }
                                 }, context().dispatcher());
                             }
                             else
                             {
-                                gitActor.tell(new LinkPullRequests(res), self());  
+                                gitActor.tell(new LinkPullRequests(res, ((JiraFilterMessage) message).HasShowChangeLog), self());  
                             }
                         }
 
