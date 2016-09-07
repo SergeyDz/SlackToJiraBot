@@ -141,6 +141,7 @@ public class JiraFormatter {
                             result.append("<").append(status.Url).append("|").append(":jenkins_building:").append(">");
                             break;
                         case "failed":
+                        case "failure":
                             result.append("<").append(a.Url).append("|").append(":github_failed:").append(">");
                             result.append("<").append(status.Url).append("|").append(":jenkins_build_failed:").append(">");
                             break;
