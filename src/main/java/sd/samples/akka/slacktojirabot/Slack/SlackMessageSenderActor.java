@@ -41,6 +41,7 @@ public class SlackMessageSenderActor extends UntypedActor {
             connection.Session.sendMessage(connection.Channel, sendMessage.Message, new SlackAttachment(), this.slackConfig);
             
         } else if(message instanceof SendAttachment){
+            
             SendAttachment source = (SendAttachment)message;
             SlackAttachment header = new SlackAttachment();
             header.color = "#267F00";
@@ -73,6 +74,8 @@ public class SlackMessageSenderActor extends UntypedActor {
                 
                 SendUndefinedMessage(builder);
             }
+            
+            connection.Session.sendMessage(connection.Channel, ":robot_face: work done !", null, this.slackConfig);
         }
     }
        

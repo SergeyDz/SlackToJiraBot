@@ -97,7 +97,7 @@ public class SkackEventListenerActor extends UntypedActor {
                 else
                 {
                     boolean hasShowChangeLog = messageContent.contains("status");
-                    senderActor.tell(new SendMessage("Team found - " + team + "\nRequesting sprint info from Jira. Please wait :clock9:"), null);
+                    senderActor.tell(new SendMessage(":robot_face: Team found - " + team + "\n:robot_face: Requesting sprint info from Jira. Please wait :clock9:"), null);
                     jiraAgileActor.tell(new JiraSprintMessage(team, hasShowChangeLog), self());
                 }
             } 
