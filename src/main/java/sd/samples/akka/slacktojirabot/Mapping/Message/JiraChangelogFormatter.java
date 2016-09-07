@@ -5,12 +5,12 @@
  */
 package sd.samples.akka.slacktojirabot.Mapping.Message;
 
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import org.joda.time.DateTime;
+import sd.samples.akka.slacktojirabot.Mapping.JiraFormatter;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
@@ -44,7 +44,7 @@ public class JiraChangelogFormatter{
         {
             //builder.append(":newspaper: ");
             logs.forEach(log -> {
-                        String assignee = JiraIssuesResultFormatter.getUserPic(log.Author);
+                        String assignee = JiraFormatter.GetUserPic(log.Author);
                         String row = this.convertChangelogFields(log.Field, log.From, log.To);
                         if(!assignee.isEmpty() && !row.isEmpty())
                         {
@@ -90,13 +90,13 @@ public class JiraChangelogFormatter{
         {
             case "status": 
                 result = String.format("%s:arrow:%s", 
-                        JiraIssuesResultFormatter.getStatusEmoji(JiraIssuesResultFormatter.getStatusTextById(from)),
-                        JiraIssuesResultFormatter.getStatusEmoji(JiraIssuesResultFormatter.getStatusTextById(to)));
+                        JiraFormatter.GetStatusEmoji(JiraFormatter.GetStatusTextById(from)),
+                        JiraFormatter.GetStatusEmoji(JiraFormatter.GetStatusTextById(to)));
                 break;
             case "assignee": 
                 result = String.format("%s:arrow:%s", 
-                        JiraIssuesResultFormatter.getUserPic(from),
-                        JiraIssuesResultFormatter.getUserPic(to));
+                        JiraFormatter.GetUserPic(from),
+                        JiraFormatter.GetUserPic(to));
                 break;
             case "resolution":
             case "Rank":

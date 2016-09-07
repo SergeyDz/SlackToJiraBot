@@ -8,6 +8,7 @@ package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 import java.util.ArrayList;
 import java.util.List;
 import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
+import sd.samples.akka.slacktojirabot.POCO.Github.PullRequest;
 
 /**
  *
@@ -19,6 +20,7 @@ public class Issue {
     {
         this.Changelog = new ArrayList<>();
         this.Commits = new ArrayList<>();
+        this.PullRequests = new ArrayList<>();
     }
     
     public String Status; 
@@ -26,10 +28,6 @@ public class Issue {
     public String Assignee;
     
     public String IssueType;
-    
-    public Boolean IsPullRequest; 
-    
-    public String PullRequestUrl; 
     
     public String Key;
     
@@ -44,4 +42,6 @@ public class Issue {
     public List<Commit> Commits;
     
     public List<String> Flagged;
+    
+    public List<PullRequest> PullRequests;
 }

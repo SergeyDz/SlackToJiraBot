@@ -9,6 +9,7 @@ import akka.actor.UntypedActor;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -18,6 +19,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 import org.apache.commons.lang.StringUtils;
+import org.eclipse.egit.github.core.CommitStatus;
 import org.eclipse.egit.github.core.PullRequest;
 import org.eclipse.egit.github.core.RepositoryBranch;
 import org.eclipse.egit.github.core.RepositoryCommit;
@@ -29,6 +31,7 @@ import org.eclipse.egit.github.core.service.RepositoryService;
 import org.joda.time.DateTime;
 import org.joda.time.Days;
 import sd.samples.akka.slacktojirabot.Mapping.CommitMapper;
+import sd.samples.akka.slacktojirabot.Mapping.PullRequestMapper;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
@@ -45,19 +48,19 @@ public class GitHubPullRequestActor extends UntypedActor {
     private final LoadingCache<String, List<PullRequest>> cachedPullRequests;
     private final LoadingCache<String, List<RepositoryCommit>> cachedCommits;
     private final LoadingCache<String, List<RepositoryBranch>> cachedBranches;
-
+    private final LoadingCache<Integer, PullRequest> cachedPullRequest;
+    
+    RepositoryId repo = new RepositoryId("intappx", "intappcloud");
+    RepositoryService repositoryService = new RepositoryService();
+    PullRequestService pullRequestService = new PullRequestService();
+    CommitService commitService  = new CommitService();
+    
     public GitHubPullRequestActor(BotConfigurationInfo config)
     {
         this.config = config;
-        
-        RepositoryId repo = new RepositoryId("intappx", "intappcloud");
-        PullRequestService pullRequestService = new PullRequestService();
-        pullRequestService.getClient().setOAuth2Token(config.GitHubToken);
-        
-        CommitService commitService  = new CommitService();
+
+        pullRequestService.getClient().setOAuth2Token(config.GitHubToken);        
         commitService.getClient().setOAuth2Token(config.GitHubToken);
-        
-        RepositoryService repositoryService = new RepositoryService();
         repositoryService.getClient().setOAuth2Token(config.GitHubToken);
         
         cachedBranches = CacheBuilder.newBuilder()
@@ -85,6 +88,19 @@ public class GitHubPullRequestActor extends UntypedActor {
               @Override
               public List<PullRequest> load(String status) throws Exception {
                 return pullRequestService.getPullRequests(repo, status);
+              }
+        });
+        
+        cachedPullRequest = CacheBuilder.newBuilder()
+        .concurrencyLevel(4)
+        .weakKeys()
+        .maximumSize(10000)
+        .expireAfterWrite(10, TimeUnit.MINUTES)
+        .build(
+            new CacheLoader<Integer, PullRequest>() {
+              @Override
+              public PullRequest load(Integer id) throws Exception {
+                return pullRequestService.getPullRequest(repo, id);
               }
         });
         
@@ -131,10 +147,18 @@ public class GitHubPullRequestActor extends UntypedActor {
                             .findFirst();
 
                     if (matches.isPresent()) {
-                        issue.IsPullRequest = true;
-                        issue.PullRequestUrl = matches.get().getHtmlUrl();
+                        try {
+                            PullRequest pull = cachedPullRequest.get(matches.get().getNumber());
+                            
+                            List<CommitStatus> statuses = commitService.getStatuses(repo, pull.getHead().getSha());
+                            issue.PullRequests.add(new PullRequestMapper(statuses).apply(pull));
+                            
+                        } catch (ExecutionException ex) {
+                            Logger.getLogger(GitHubPullRequestActor.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (IOException ex) {
+                            Logger.getLogger(GitHubPullRequestActor.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                     }
-
                 });
             }
             
@@ -174,26 +198,6 @@ public class GitHubPullRequestActor extends UntypedActor {
                             });
                     
                 });
-                
-//                List<Commit> commits = cachedCommits.get("All")
-//                        .stream()
-//                        .map(m -> {return new CommitMapper().apply(m);})
-//                        .collect(Collectors.toList());
-//                
-//                issues.stream().forEach((issue) -> {
-//                    Optional<Commit> matches = commits
-//                            .stream()
-//                            .filter(p -> 
-//                                    StringUtils.containsIgnoreCase(p.Message, issue.Key)
-//                                    || StringUtils.containsIgnoreCase(p.Message, issue.Key.replace("-", " "))
-//                                    || StringUtils.containsIgnoreCase(p.Message, issue.Key.replace("-", ""))
-//                            )
-//                            .findFirst();
-//
-//                    if (matches.isPresent()) {
-//                        issue.Commits.add(matches.get());
-//                    }
-//                });
             }
             
             // call Jira Actor back
