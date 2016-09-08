@@ -40,18 +40,19 @@ public class BotConfigurationInfo {
             }
         }
         
-        this.SlackAuthorizationKey = propertiesMap.get("slack-key").isEmpty() ? propertiesMap.get("slack-key").trim() : System.getenv("slackkey");
-        this.JiraUser = propertiesMap.get("jira-user").isEmpty() ? propertiesMap.get("jira-user").trim() : System.getenv("jirauser");
-        this.JiraPassword = propertiesMap.get("jira-password").isEmpty() ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
-        this.GitHubToken = propertiesMap.get("github-key").isEmpty() ? propertiesMap.get("github-key").trim() : System.getenv("githubkey");
-        String channels = propertiesMap.get("slack-channels").isEmpty() ? propertiesMap.get("slack-channels").trim() : System.getenv("slackchannels");
+       
+        this.SlackAuthorizationKey = propertiesMap.containsKey("slack-key") ? propertiesMap.get("slack-key").trim() : System.getenv("slackkey");
+        this.JiraUser = propertiesMap.containsKey("jira-user") ? propertiesMap.get("jira-user").trim() : System.getenv("jirauser");
+        this.JiraPassword = propertiesMap.containsKey("jira-password") ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
+        this.GitHubToken = propertiesMap.containsKey("github-key") ? propertiesMap.get("github-key").trim() : System.getenv("githubkey");
+        String channels = propertiesMap.containsKey("slack-channels") ? propertiesMap.get("slack-channels").trim() : System.getenv("slackchannels");
         
-        System.out.println("Channels config detected: " + channels);
-        if(channels.isEmpty())
+        if(channels == null)
         {
-            System.err.println("Channels is not defined.");
+            throw new Exception("Channels is not defined.");
         }
         
+        System.out.println("Channels config detected: " + channels);
         this.Channels = Arrays.asList(channels.split(","))
                 .stream().map(x -> x.trim())
                 .collect(Collectors.toList());
