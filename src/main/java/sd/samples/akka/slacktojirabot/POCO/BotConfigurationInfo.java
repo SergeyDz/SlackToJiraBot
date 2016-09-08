@@ -20,15 +20,25 @@ public class BotConfigurationInfo {
     
     private static Map<String, String> propertiesMap;
      
-    public BotConfigurationInfo(String[] args)
+    public BotConfigurationInfo(String[] args) throws Exception
     {
+        if(args == null || args.length == 0)
+        {
+            throw new Exception("BotEngineRunner was called without parameters.");
+        }
+        
+        System.out.println("BotEngineRunner starting with parameters:");
         propertiesMap = new HashMap<>();
         this.Channels = new ArrayList<String>();
         
         for (String arg : args) {
             if (arg.contains("=")) {
-                propertiesMap.put(arg.substring(0, arg.indexOf('=')),
-                        arg.substring(arg.indexOf('=') + 1));
+                String key = arg.substring(0, arg.indexOf('='));
+                String value = arg.substring(arg.indexOf('=') + 1);
+                
+                System.out.println(arg);
+                
+                propertiesMap.put(key, value);
             }
         }
         
