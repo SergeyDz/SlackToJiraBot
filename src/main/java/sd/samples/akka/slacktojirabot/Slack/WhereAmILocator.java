@@ -23,7 +23,13 @@ public class WhereAmILocator {
 
     public String call() {
         
-        if(message.equals("jirabot sprint") || message.equals("jirabot sprint status"))
+        String removeReqularWords = this.message
+                .replace("sprint", "")
+                .replace("status", "")
+                .replace("jirabot", "")
+                .trim();
+        
+        if(removeReqularWords.isEmpty())
         {
             if(channel.startsWith("team-"))
             {
@@ -38,9 +44,9 @@ public class WhereAmILocator {
                 return channel.replace("-sdzyuban", "");
             }
         }
-        else if(message.startsWith("jirabot sprint") && message.split(" ").length > 2)
+        else if(message.split(" ").length > 1)
         {
-            return message.split(" ")[2];
+            return removeReqularWords;
         }
         
         return "";

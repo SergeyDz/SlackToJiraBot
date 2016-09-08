@@ -55,7 +55,7 @@ public class JiraFilterActor extends UntypedActor {
             final JiraRestClient restClient = factory.createWithBasicHttpAuthentication(jiraServerUri, config.JiraUser, config.JiraPassword);
 
             ListenableFuture<SearchResult> searchResults = restClient.getSearchClient()
-                            .searchJql(String.format("(project = \"Intapp Cloud\") AND Sprint=%s  ORDER BY status ASC", request.Sprint.id));
+                            .searchJql(String.format("Sprint=%s  ORDER BY status ASC", request.Sprint.id));
 
             Futures.addCallback(searchResults, new FutureCallback<SearchResult>() {
                         @Override

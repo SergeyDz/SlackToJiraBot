@@ -9,7 +9,9 @@ import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.concurrent.Future;
+import javax.ws.rs.NotFoundException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -68,14 +70,17 @@ public class JiraSprintActor extends UntypedActor {
                         JiraSprintResponse sprints = objectMapper.readValue(response.getEntity().getContent(), JiraSprintResponse.class);
                         if(sprints != null && sprints.values != null)
                         {
-                            JiraSprint result = Arrays.stream(sprints.values)
+                            Optional<JiraSprint> result = Arrays.stream(sprints.values)
                                     .filter(c -> StringUtils.containsIgnoreCase(c.name, sprint.TeamName))
-                                    .findFirst()
-                                    .get();
+                                    .findFirst();
                             
-                            if(result != null)
+                            if(result.isPresent())
                             {
-                                sender.tell(new JiraFilterMessage(result, sprint.HasShowChangeLog), null);
+                                sender.tell(new JiraFilterMessage(result.get(), sprint.HasShowChangeLog), null);
+                            }
+                            else
+                            {
+                                sender.tell("NotFound", sender);
                             }
                         }
                     }

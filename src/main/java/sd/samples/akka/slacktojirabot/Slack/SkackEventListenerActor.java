@@ -15,6 +15,7 @@ import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 import java.io.IOException;
+import javax.ws.rs.NotFoundException;
 import sd.samples.akka.slacktojirabot.GitHub.GitHubPullRequestActor;
 import sd.samples.akka.slacktojirabot.Jira.JiraFilterActor;
 import sd.samples.akka.slacktojirabot.Jira.JiraFilterMessage;
@@ -75,6 +76,10 @@ public class SkackEventListenerActor extends UntypedActor {
             JiraFilterMessage filter = (JiraFilterMessage)message;
             jiraActor.tell(new JiraFilterMessage(filter.Sprint, filter.HasShowChangeLog), null);
         }
+        else if("NotFound".equals(message))
+        {
+            senderActor.tell(new SendMessage(":robot_face: I'm sorry - nothing was found."), null);
+        }
     }
     
     public void registeringAListener(SlackSession session, SlackChannel theChannel) 
@@ -86,7 +91,7 @@ public class SkackEventListenerActor extends UntypedActor {
             }
             String messageContent = event.getMessageContent();
             
-            if(messageContent.startsWith("jirabot sprint"))
+            if(messageContent.toLowerCase().startsWith("jirabot"))
             {
                 String team = new WhereAmILocator(messageContent, theChannel.getName()).call();
 
@@ -96,12 +101,12 @@ public class SkackEventListenerActor extends UntypedActor {
                 }
                 else
                 {
-                    boolean hasShowChangeLog = messageContent.contains("status");
+                    boolean hasShowChangeLog = messageContent.toLowerCase().contains("status");
                     senderActor.tell(new SendMessage(":robot_face: Team found - " + team + "\n:robot_face: Requesting sprint info from Jira. Please wait :clock9:"), null);
                     jiraAgileActor.tell(new JiraSprintMessage(team, hasShowChangeLog), self());
                 }
             } 
-            else if(messageContent.equals("jirabot"))
+            else if(messageContent.toLowerCase().equals("jirabot"))
             {
                 String commands = String.format("Commands: \n%s \n%s \n%s \n%s", 
                         "_jirabot sprint_", 
@@ -110,7 +115,7 @@ public class SkackEventListenerActor extends UntypedActor {
                         "_jirabot sprint *team*_ status");
                 senderActor.tell(new SendMessage(commands), null);
             }
-            else if(messageContent.startsWith("jirabot"))
+            else if(messageContent.toLowerCase().startsWith("jirabot"))
             {
                 senderActor.tell(new SendMessage("Hi, I don't understand. :scream:"), null);
             }
