@@ -21,35 +21,32 @@ public class BotConfigurationInfo {
     private static Map<String, String> propertiesMap;
      
     public BotConfigurationInfo(String[] args) throws Exception
-    {
-        if(args == null || args.length == 0)
-        {
-            throw new Exception("BotEngineRunner was called without parameters.");
-        }
-        
+    {     
         System.out.println("BotEngineRunner starting with parameters:");
         propertiesMap = new HashMap<>();
         this.Channels = new ArrayList<String>();
         
-        for (String arg : args) {
-            if (arg.contains("=")) {
-                String key = arg.substring(0, arg.indexOf('='));
-                String value = arg.substring(arg.indexOf('=') + 1);
-                
-                System.out.println(arg);
-                
-                propertiesMap.put(key, value);
+        if(args != null && args.length > 0)
+        {
+            for (String arg : args) {
+                if (arg.contains("=")) {
+                    String key = arg.substring(0, arg.indexOf('='));
+                    String value = arg.substring(arg.indexOf('=') + 1);
+
+                    System.out.println(arg);
+
+                    propertiesMap.put(key, value);
+                }
             }
         }
         
-        this.SlackAuthorizationKey = propertiesMap.get("slack-key").trim();
-        this.JiraUser = propertiesMap.get("jira-user").trim();
-        this.JiraPassword = propertiesMap.get("jira-password").trim();
-        this.GitHubToken = propertiesMap.get("github-key").trim();
+        this.SlackAuthorizationKey = propertiesMap.get("slack-key").isEmpty() ? propertiesMap.get("slack-key").trim() : System.getenv("slackkey");
+        this.JiraUser = propertiesMap.get("jira-user").isEmpty() ? propertiesMap.get("jira-user").trim() : System.getenv("jirauser");
+        this.JiraPassword = propertiesMap.get("jira-password").isEmpty() ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
+        this.GitHubToken = propertiesMap.get("github-key").isEmpty() ? propertiesMap.get("github-key").trim() : System.getenv("githubkey");
+        String channels = propertiesMap.get("slack-channels").isEmpty() ? propertiesMap.get("slack-channels").trim() : System.getenv("slackchannels");
         
-        String channels = propertiesMap.get("slack-channels").trim();
         System.out.println("Channels config detected: " + channels);
-        
         if(channels.isEmpty())
         {
             System.err.println("Channels is not defined.");
