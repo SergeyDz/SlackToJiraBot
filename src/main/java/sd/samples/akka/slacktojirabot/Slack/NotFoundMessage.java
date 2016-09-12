@@ -3,20 +3,19 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.POCO.Slack;
+package sd.samples.akka.slacktojirabot.Slack;
 
 import com.ullink.slack.simpleslackapi.SlackUser;
-import java.util.List;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
 
 /**
  *
  * @author sdzyuban
  */
-public class SendAttachment extends SendMessage {
+public class NotFoundMessage extends SendMessage{
     
-    public List<Attachment> Attachments;
-
-    public SendAttachment(String message, SlackUser sender) {
+    public NotFoundMessage(String message, SlackUser sender) {
         super(message, sender);
     }
+    
 }

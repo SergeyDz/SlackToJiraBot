@@ -10,6 +10,7 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackSession;
+import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
@@ -70,11 +71,12 @@ public class SkackEventListenerActor extends UntypedActor {
         else if(message instanceof JiraFilterMessage)
         {
             JiraFilterMessage filter = (JiraFilterMessage)message;
-            jiraActor.tell(new JiraFilterMessage(filter.Sprint, filter.HasShowChangeLog), null);
+            jiraActor.tell(new JiraFilterMessage(filter.Sprint, filter.HasShowChangeLog, filter.Sender), null);
         }
-        else if("NotFound".equals(message))
+        else if(message instanceof NotFoundMessage)
         {
-            senderActor.tell(new SendMessage(":robot_face: I'm sorry - nothing was found."), null);
+            NotFoundMessage notfound = (NotFoundMessage)message;
+            senderActor.tell(new SendMessage(":robot_face: I'm sorry - nothing was found.", notfound.Sender), null);
         }
     }
     
@@ -86,6 +88,7 @@ public class SkackEventListenerActor extends UntypedActor {
                 return; 
             }
             String messageContent = event.getMessageContent();
+            SlackUser sender = event.getSender();
             
             if(messageContent.toLowerCase().startsWith("jirabot"))
             {
@@ -93,13 +96,13 @@ public class SkackEventListenerActor extends UntypedActor {
 
                 if(team.isEmpty())
                 {
-                     senderActor.tell(new SendMessage("Sorry, but I can't find your team name. Please try _jirabot sprint jets_."), null);
+                     senderActor.tell(new SendMessage("Sorry, but I can't find your team name. Please try _jirabot sprint jets_.", sender), null);
                 }
                 else
                 {
                     boolean hasShowChangeLog = messageContent.toLowerCase().contains("status");
-                    senderActor.tell(new SendMessage(":robot_face: Team found - " + team + "\n:robot_face: Requesting sprint info from Jira. Please wait :clock9:"), null);
-                    jiraAgileActor.tell(new JiraSprintMessage(team, hasShowChangeLog), self());
+                    senderActor.tell(new SendMessage(":robot_face: Team found - " + team + "\n:robot_face: Requesting sprint info from Jira. Please wait :clock9:", sender), null);
+                    jiraAgileActor.tell(new JiraSprintMessage(team, hasShowChangeLog, sender), self());
                 }
             } 
             else if(messageContent.toLowerCase().equals("jirabot"))
@@ -109,11 +112,11 @@ public class SkackEventListenerActor extends UntypedActor {
                         "_jirabot sprint *team*_",
                         "_jirabot sprint status_",
                         "_jirabot sprint *team*_ status");
-                senderActor.tell(new SendMessage(commands), null);
+                senderActor.tell(new SendMessage(commands, sender), null);
             }
             else if(messageContent.toLowerCase().startsWith("jirabot"))
             {
-                senderActor.tell(new SendMessage("Hi, I don't understand. :scream:"), null);
+                senderActor.tell(new SendMessage("Hi, I don't understand. :scream:", sender), null);
             }
             else
             {

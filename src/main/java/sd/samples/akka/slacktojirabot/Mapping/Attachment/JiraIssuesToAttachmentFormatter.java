@@ -5,6 +5,7 @@
  */
 package sd.samples.akka.slacktojirabot.Mapping.Attachment;
 
+import com.ullink.slack.simpleslackapi.SlackUser;
 import java.util.ArrayList;
 import sd.samples.akka.slacktojirabot.Mapping.Message.JiraChangelogFormatter;
 import java.util.List;
@@ -14,6 +15,7 @@ import sd.samples.akka.slacktojirabot.Mapping.JiraStatisticsFormatter;
 import sd.samples.akka.slacktojirabot.POCO.Slack.Attachment;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendAttachment;
 
 /**
@@ -24,18 +26,20 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
 
     private final List<Issue> issues;
     private final BotConfigurationInfo config;
+    private final SlackUser sender;
     
-    public  JiraIssuesToAttachmentFormatter(List<Issue> issues, BotConfigurationInfo config)
+    public  JiraIssuesToAttachmentFormatter(JiraIssuesContainer issues, BotConfigurationInfo config)
     {
-        this.issues = issues;
+        this.issues = issues.Issues;
         this.config = config;
+        this.sender = issues.Sender;
     }
     
     @Override
     public SendAttachment call() throws Exception {
-        SendAttachment attachments = new SendAttachment();
+        SendAttachment attachments = new SendAttachment("", this.sender);
         
-        attachments.Header = new JiraStatisticsFormatter(this.issues).call();
+        attachments.Message = new JiraStatisticsFormatter(this.issues).call();
         attachments.Attachments = new ArrayList<>();
         
         issues.forEach((issue) -> {

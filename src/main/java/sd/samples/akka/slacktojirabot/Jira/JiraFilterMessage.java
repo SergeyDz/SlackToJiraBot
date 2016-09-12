@@ -5,6 +5,7 @@
  */
 package sd.samples.akka.slacktojirabot.Jira;
 
+import com.ullink.slack.simpleslackapi.SlackUser;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
 
 /**
@@ -13,13 +14,16 @@ import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
  */
 public class JiraFilterMessage {
     
-    public JiraFilterMessage(JiraSprint sprint, boolean hasShowChangeLog)
+    public JiraFilterMessage(JiraSprint sprint, boolean hasShowChangeLog, SlackUser sender)
     {
         this.Sprint = sprint;
         this.HasShowChangeLog = hasShowChangeLog;
+        this.Sender = sender;
     }
     
     public final JiraSprint Sprint; 
     
     public final boolean HasShowChangeLog;  
+    
+    public final SlackUser Sender;
 }

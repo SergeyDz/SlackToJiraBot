@@ -5,8 +5,10 @@
  */
 package sd.samples.akka.slacktojirabot.POCO.Github;
 
+import com.ullink.slack.simpleslackapi.SlackUser;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import java.util.List;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 
 /**
  *
@@ -14,11 +16,11 @@ import java.util.List;
  */
 public class LinkPullRequests {
     
-    private final List<Issue> issues; 
+    private final JiraIssuesContainer issues; 
     
     public final boolean HasShowChangeLog;  
     
-    public LinkPullRequests(List<Issue> issues, boolean hasShowChangeLog)
+    public LinkPullRequests(JiraIssuesContainer issues, boolean hasShowChangeLog)
     {
         this.issues = issues;
         this.HasShowChangeLog = hasShowChangeLog;
@@ -26,6 +28,12 @@ public class LinkPullRequests {
     
     public List<Issue> getIssues()
     {
-        return this.issues;
+        return this.issues.Issues;
     }
+    
+    public SlackUser getsender()
+    {
+        return this.issues.Sender;
+    }
+            
 }

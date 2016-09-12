@@ -7,6 +7,7 @@ package sd.samples.akka.slacktojirabot.Slack;
 
 import akka.actor.UntypedActor;
 import com.ullink.slack.simpleslackapi.SlackAttachment;
+import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,17 +39,17 @@ public class SlackMessageSenderActor extends UntypedActor {
         if(message instanceof SendMessage){
             SendMessage sendMessage = (SendMessage)message;
             
-            connection.Session.sendMessage(connection.Channel, sendMessage.Message, new SlackAttachment(), this.slackConfig);
+            connection.Session.sendMessageToUser(sendMessage.Sender, sendMessage.Message, new SlackAttachment());
             
         } else if(message instanceof SendAttachment){
             
             SendAttachment source = (SendAttachment)message;
             SlackAttachment header = new SlackAttachment();
             header.color = "#267F00";
-            header.text = source.Header;
+            header.text = source.Message;
             header.markdown_in = Arrays.asList("text", "pretext");
             
-            connection.Session.sendMessage(connection.Channel, "Sprint statistics.", header, this.slackConfig);
+            connection.Session.sendMessageToUser(source.Sender, "Sprint statistics.", header);
             
             if(source.Attachments != null && source.Attachments.size() > 0)
             {
@@ -58,13 +59,13 @@ public class SlackMessageSenderActor extends UntypedActor {
                     if(attachment.ChangelogItems != null && !attachment.ChangelogItems.isEmpty())
                     {
                         
-                        SendUndefinedMessage(builder);
+                        SendUndefinedMessage(builder, source.Sender);
                         
                         SlackAttachment item = new SlackAttachment();
                         //item.title = "Changelog";
                         item.text = attachment.ChangelogItems;
                         
-                        connection.Session.sendMessage(connection.Channel, attachment.Message, item, slackConfig);
+                        connection.Session.sendMessageToUser(source.Sender, attachment.Message, item);
                     }
                     else
                     {
@@ -72,20 +73,20 @@ public class SlackMessageSenderActor extends UntypedActor {
                     }
                 });
                 
-                SendUndefinedMessage(builder);
+                SendUndefinedMessage(builder, source.Sender);
             }
             
-            connection.Session.sendMessage(connection.Channel, ":robot_face: work done !", null, this.slackConfig);
+            connection.Session.sendMessageToUser(source.Sender, ":robot_face: work done !", null);
         }
     }
        
-    private void SendUndefinedMessage(StringBuilder builder)
+    private void SendUndefinedMessage(StringBuilder builder, SlackUser sender)
     {
         String text = builder.toString();
         builder.setLength(0);
         
         if(!text.isEmpty()){
-            connection.Session.sendMessage(connection.Channel, text, new SlackAttachment(), this.slackConfig);
+            connection.Session.sendMessageToUser(sender, text, new SlackAttachment());
         }
     }
     

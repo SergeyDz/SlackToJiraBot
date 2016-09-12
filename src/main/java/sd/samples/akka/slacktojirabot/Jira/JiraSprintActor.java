@@ -76,7 +76,7 @@ public class JiraSprintActor extends UntypedActor {
                             
                             if(result.isPresent())
                             {
-                                sender.tell(new JiraFilterMessage(result.get(), sprint.HasShowChangeLog), null);
+                                sender.tell(new JiraFilterMessage(result.get(), sprint.HasShowChangeLog, sprint.Sender), null);
                             }
                             else
                             {

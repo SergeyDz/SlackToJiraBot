@@ -34,6 +34,7 @@ import sd.samples.akka.slacktojirabot.Mapping.CommitMapper;
 import sd.samples.akka.slacktojirabot.Mapping.PullRequestMapper;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 
@@ -201,7 +202,7 @@ public class GitHubPullRequestActor extends UntypedActor {
             }
             
             // call Jira Actor back
-            getSender().tell(new LinkPullRequests(issues, request.HasShowChangeLog), null);
+            getSender().tell(new LinkPullRequests(new JiraIssuesContainer(issues, request.getsender()), request.HasShowChangeLog), null);
             
         }
         else

@@ -5,19 +5,24 @@
  */
 package sd.samples.akka.slacktojirabot.Jira;
 
+import com.ullink.slack.simpleslackapi.SlackUser;
+
 /**
  *
  * @author sdzyuban
  */
 public class JiraSprintMessage {
     
-    public JiraSprintMessage(String teamName, boolean hasShowChangeLog)
+    public JiraSprintMessage(String teamName, boolean hasShowChangeLog, SlackUser sender)
     {
         this.TeamName = teamName;
         this.HasShowChangeLog = hasShowChangeLog;
+        this.Sender = sender;
     }
     
     public final boolean HasShowChangeLog; 
     
     public final String TeamName;
+    
+    public SlackUser Sender;
 }

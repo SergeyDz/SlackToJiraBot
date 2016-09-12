@@ -24,6 +24,7 @@ import java.util.stream.StreamSupport;
 import sd.samples.akka.slacktojirabot.Mapping.Attachment.JiraIssuesToAttachmentFormatter;
 import sd.samples.akka.slacktojirabot.Mapping.JiraIssueMapper;
 import sd.samples.akka.slacktojirabot.Mapping.Message.JiraIssuesResultFormatter;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
 
@@ -80,13 +81,13 @@ public class JiraFilterActor extends UntypedActor {
                                         List<Issue> issues = StreamSupport.stream(success.spliterator(), false)
                                                 .collect(Collectors.toList());
 
-                                        gitActor.tell(new LinkPullRequests(issues, ((JiraFilterMessage) message).HasShowChangeLog), self());
+                                        gitActor.tell(new LinkPullRequests(new JiraIssuesContainer(issues, request.Sender), ((JiraFilterMessage) message).HasShowChangeLog), self());
                                     }
                                 }, context().dispatcher());
                             }
                             else
                             {
-                                gitActor.tell(new LinkPullRequests(res, ((JiraFilterMessage) message).HasShowChangeLog), self());  
+                                gitActor.tell(new LinkPullRequests(new JiraIssuesContainer(res, request.Sender), ((JiraFilterMessage) message).HasShowChangeLog), self());  
                             }
                         }
 
@@ -99,14 +100,15 @@ public class JiraFilterActor extends UntypedActor {
         }
         else if(message instanceof LinkPullRequests)
         {
-            List<Issue> issues = ((LinkPullRequests)message).getIssues();
+            LinkPullRequests request = ((LinkPullRequests)message);
+            List<Issue> issues = request.getIssues();
             if(config.HasUseSlackAttachment)
             {
-                senderActor.tell(new JiraIssuesToAttachmentFormatter(issues, config).call(), null);
+                senderActor.tell(new JiraIssuesToAttachmentFormatter(new JiraIssuesContainer(issues, request.getsender()) , config).call(), null);
             }
             else
             {
-                senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(issues, config).call()), null);
+                senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(issues, config).call(), request.getsender()), null);
             }
         }
         else
