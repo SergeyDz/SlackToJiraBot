@@ -20,16 +20,18 @@ import sd.samples.akka.slacktojirabot.POCO.Slack.SlackConnectionInfo;
  *
  * @author sdzyuban
  */
-public class SlackMessageSenderActor extends UntypedActor {
+public class SlackUserMessageSenderActor extends UntypedActor {
 
     private final SlackConnectionInfo connection;
     private final BotConfigurationInfo config;
     private final  SlackChatConfiguration slackConfig;
+    private final SlackUser sender;
     
-    public SlackMessageSenderActor(SlackConnectionInfo connection, BotConfigurationInfo config)
+    public SlackUserMessageSenderActor(SlackConnectionInfo connection, BotConfigurationInfo config, SlackUser sender)
     {
         this.connection = connection;
         this.config = config;
+        this.sender = sender;
         this.slackConfig = SlackChatConfiguration.getConfiguration();
         slackConfig.withName("Jirabot");
     }
@@ -39,7 +41,7 @@ public class SlackMessageSenderActor extends UntypedActor {
         if(message instanceof SendMessage){
             SendMessage sendMessage = (SendMessage)message;
             
-            connection.Session.sendMessageToUser(sendMessage.Sender, sendMessage.Message, new SlackAttachment());
+            connection.Session.sendMessageToUser(this.sender, sendMessage.Message, new SlackAttachment());
             
         } else if(message instanceof SendAttachment){
             
@@ -49,7 +51,7 @@ public class SlackMessageSenderActor extends UntypedActor {
             header.text = source.Message;
             header.markdown_in = Arrays.asList("text", "pretext");
             
-            connection.Session.sendMessageToUser(source.Sender, "Sprint statistics.", header);
+            connection.Session.sendMessageToUser(this.sender, "Sprint statistics.", header);
             
             if(source.Attachments != null && source.Attachments.size() > 0)
             {
@@ -59,13 +61,12 @@ public class SlackMessageSenderActor extends UntypedActor {
                     if(attachment.ChangelogItems != null && !attachment.ChangelogItems.isEmpty())
                     {
                         
-                        SendUndefinedMessage(builder, source.Sender);
+                        SendUndefinedMessage(builder, this.sender);
                         
                         SlackAttachment item = new SlackAttachment();
-                        //item.title = "Changelog";
                         item.text = attachment.ChangelogItems;
                         
-                        connection.Session.sendMessageToUser(source.Sender, attachment.Message, item);
+                        connection.Session.sendMessageToUser(this.sender, attachment.Message, item);
                     }
                     else
                     {
@@ -73,10 +74,10 @@ public class SlackMessageSenderActor extends UntypedActor {
                     }
                 });
                 
-                SendUndefinedMessage(builder, source.Sender);
+                SendUndefinedMessage(builder, this.sender);
             }
             
-            connection.Session.sendMessageToUser(source.Sender, ":robot_face: work done !", null);
+            connection.Session.sendMessageToUser(this.sender, ":robot_face: work done !", null);
         }
     }
        

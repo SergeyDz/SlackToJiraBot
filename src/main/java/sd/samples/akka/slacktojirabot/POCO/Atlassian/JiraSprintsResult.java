@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.Jira;
+package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
 import com.ullink.slack.simpleslackapi.SlackUser;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
@@ -12,18 +12,13 @@ import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
  *
  * @author sdzyuban
  */
-public class JiraFilterMessage {
+public class JiraSprintsResult {
     
-    public JiraFilterMessage(JiraSprint sprint, boolean hasShowChangeLog, SlackUser sender)
+    public JiraSprintsResult(JiraSprint sprint)
     {
         this.Sprint = sprint;
-        this.HasShowChangeLog = hasShowChangeLog;
-        this.Sender = sender;
     }
     
     public final JiraSprint Sprint; 
-    
-    public final boolean HasShowChangeLog;  
-    
-    public final SlackUser Sender;
+
 }

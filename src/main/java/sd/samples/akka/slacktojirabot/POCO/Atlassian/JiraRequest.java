@@ -5,19 +5,19 @@
  */
 package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
-import com.ullink.slack.simpleslackapi.SlackUser;
-import java.util.List;
-
 /**
  *
  * @author sdzyuban
  */
-public class JiraIssuesContainer {
+public class JiraRequest {
     
-    public JiraIssuesContainer(List<Issue> issues)
+    public final String Team;
+    
+    public final boolean HasShowChangeLog;
+    
+    public JiraRequest(String team, boolean hasShowChangeLog)
     {
-        this.Issues = issues;
-    }
-    
-    public List<Issue> Issues;
+        this.Team = team;
+        this.HasShowChangeLog = hasShowChangeLog;        
+    }    
 }

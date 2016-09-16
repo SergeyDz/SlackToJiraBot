@@ -14,8 +14,8 @@ import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
  */
 public class NotFoundMessage extends SendMessage{
     
-    public NotFoundMessage(String message, SlackUser sender) {
-        super(message, sender);
+    public NotFoundMessage(String message) {
+        super(message);
     }
     
 }

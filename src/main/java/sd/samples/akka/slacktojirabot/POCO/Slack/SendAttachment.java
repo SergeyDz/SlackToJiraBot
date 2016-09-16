@@ -16,7 +16,7 @@ public class SendAttachment extends SendMessage {
     
     public List<Attachment> Attachments;
 
-    public SendAttachment(String message, SlackUser sender) {
-        super(message, sender);
+    public SendAttachment(String message) {
+        super(message);
     }
 }

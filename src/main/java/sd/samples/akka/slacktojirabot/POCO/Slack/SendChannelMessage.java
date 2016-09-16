@@ -4,19 +4,15 @@
  * and open the template in the editor.
  */
 package sd.samples.akka.slacktojirabot.POCO.Slack;
-import com.ullink.slack.simpleslackapi.SlackUser;
-import java.util.List;
 
 /**
  *
  * @author sdzyuban
  */
-public class SendMessage {
+public class SendChannelMessage extends SendMessage {
     
-    public SendMessage(String message)
-    {
-        this.Message = message;
+    public SendChannelMessage(String message) {
+        super(message);
     }
     
-    public String Message;
 }

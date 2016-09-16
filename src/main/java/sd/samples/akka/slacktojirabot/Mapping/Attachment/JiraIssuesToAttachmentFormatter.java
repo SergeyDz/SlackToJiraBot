@@ -26,18 +26,16 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
 
     private final List<Issue> issues;
     private final BotConfigurationInfo config;
-    private final SlackUser sender;
     
     public  JiraIssuesToAttachmentFormatter(JiraIssuesContainer issues, BotConfigurationInfo config)
     {
         this.issues = issues.Issues;
         this.config = config;
-        this.sender = issues.Sender;
     }
     
     @Override
     public SendAttachment call() throws Exception {
-        SendAttachment attachments = new SendAttachment("", this.sender);
+        SendAttachment attachments = new SendAttachment("");
         
         attachments.Message = new JiraStatisticsFormatter(this.issues).call();
         attachments.Attachments = new ArrayList<>();

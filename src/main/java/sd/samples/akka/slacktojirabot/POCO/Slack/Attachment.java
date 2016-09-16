@@ -5,8 +5,6 @@
  */
 package sd.samples.akka.slacktojirabot.POCO.Slack;
 
-import java.util.List;
-
 /**
  *
  * @author sdzyuban

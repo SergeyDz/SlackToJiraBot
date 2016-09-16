@@ -5,6 +5,7 @@
  */
 package sd.samples.akka.slacktojirabot.Jira;
 
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintsResult;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import akka.actor.ActorRef;
@@ -24,6 +25,7 @@ import java.util.stream.StreamSupport;
 import sd.samples.akka.slacktojirabot.Mapping.Attachment.JiraIssuesToAttachmentFormatter;
 import sd.samples.akka.slacktojirabot.Mapping.JiraIssueMapper;
 import sd.samples.akka.slacktojirabot.Mapping.Message.JiraIssuesResultFormatter;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterResult;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
@@ -35,59 +37,60 @@ import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
  */
 public class JiraFilterActor extends UntypedActor {
 
-    private final ActorRef senderActor;
-    private final ActorRef gitActor;
     private final BotConfigurationInfo config;
+    private final boolean hasShowChangeLog;
     
-    public JiraFilterActor(ActorRef senderActor, ActorRef gitActor, BotConfigurationInfo config)
+    public JiraFilterActor(boolean hasShowChangeLog, BotConfigurationInfo config)
     {
-        this.senderActor = senderActor;
-        this.gitActor = gitActor;
         this.config = config;
+        this.hasShowChangeLog = hasShowChangeLog;
     }
     
     @Override
     public void onReceive(Object message) throws Exception {
-        if(message instanceof JiraFilterMessage)
+        if(message instanceof JiraSprintsResult)
         {
-            JiraFilterMessage request = (JiraFilterMessage)message;
+            JiraSprintsResult request = (JiraSprintsResult)message;
             JiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
             final URI jiraServerUri = new URI(config.JiraBaseUrl);
             final JiraRestClient restClient = factory.createWithBasicHttpAuthentication(jiraServerUri, config.JiraUser, config.JiraPassword);
 
             ListenableFuture<SearchResult> searchResults = restClient.getSearchClient()
                             .searchJql(String.format("Sprint=%s  ORDER BY status ASC", request.Sprint.id));
+            
+            ActorRef sender = sender();
 
             Futures.addCallback(searchResults, new FutureCallback<SearchResult>() {
                         @Override
                         public void onSuccess(SearchResult results) {    
-
+                            
                             List<Issue> res = StreamSupport.stream(results.getIssues().spliterator(), false)
                                     .map(a -> new JiraIssueMapper((config)).apply(a))
                                     .collect(Collectors.toList());
                             
-                            if(request.HasShowChangeLog)
+                            if(hasShowChangeLog)
                             {
                                 List<scala.concurrent.Future<Issue>> collect = res.stream()
                                         .map(a -> akka.dispatch.Futures.future(new JiraItemLoader(restClient, a, config), context().system().dispatcher()))
                                         .collect(Collectors.toList());
 
                                 scala.concurrent.Future<Iterable<Issue>> result = akka.dispatch.Futures.sequence(collect, context().dispatcher());
-
+                                
                                 result.onSuccess(new OnSuccess<Iterable<Issue>>() {
 
                                     @Override
                                     public void onSuccess(Iterable<Issue> success) throws Throwable {
                                         List<Issue> issues = StreamSupport.stream(success.spliterator(), false)
                                                 .collect(Collectors.toList());
-
-                                        gitActor.tell(new LinkPullRequests(new JiraIssuesContainer(issues, request.Sender), ((JiraFilterMessage) message).HasShowChangeLog), self());
+                                        sender.tell(new JiraFilterResult(issues), null);
+                                        //gitActor.tell(new LinkPullRequests(new JiraIssuesContainer(issues), ((JiraSprintsResult) message).HasShowChangeLog), self());
+                                        
                                     }
                                 }, context().dispatcher());
                             }
                             else
                             {
-                                gitActor.tell(new LinkPullRequests(new JiraIssuesContainer(res, request.Sender), ((JiraFilterMessage) message).HasShowChangeLog), self());  
+                                sender.tell(new JiraFilterResult(res), null);  
                             }
                         }
 
@@ -98,19 +101,19 @@ public class JiraFilterActor extends UntypedActor {
 
                     }); 
         }
-        else if(message instanceof LinkPullRequests)
-        {
-            LinkPullRequests request = ((LinkPullRequests)message);
-            List<Issue> issues = request.getIssues();
-            if(config.HasUseSlackAttachment)
-            {
-                senderActor.tell(new JiraIssuesToAttachmentFormatter(new JiraIssuesContainer(issues, request.getsender()) , config).call(), null);
-            }
-            else
-            {
-                senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(issues, config).call(), request.getsender()), null);
-            }
-        }
+//        else if(message instanceof LinkPullRequests)
+//        {
+//            LinkPullRequests request = ((LinkPullRequests)message);
+//            List<Issue> issues = request.getIssues();
+//            if(config.HasUseSlackAttachment)
+//            {
+//                senderActor.tell(new JiraIssuesToAttachmentFormatter(new JiraIssuesContainer(issues) , config).call(), null);
+//            }
+//            else
+//            {
+//                senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(issues, config).call()), null);
+//            }
+//        }
         else
         {
              System.out.println("GitHubPullRequestActor not support message " + message);

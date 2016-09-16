@@ -5,6 +5,7 @@
  */
 package sd.samples.akka.slacktojirabot.Jira;
 
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintsResult;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -76,7 +77,7 @@ public class JiraSprintActor extends UntypedActor {
                             
                             if(result.isPresent())
                             {
-                                sender.tell(new JiraFilterMessage(result.get(), sprint.HasShowChangeLog, sprint.Sender), null);
+                                sender.tell(new JiraSprintsResult(result.get()), null);
                             }
                             else
                             {

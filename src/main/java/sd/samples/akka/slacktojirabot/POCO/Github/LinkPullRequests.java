@@ -29,11 +29,5 @@ public class LinkPullRequests {
     public List<Issue> getIssues()
     {
         return this.issues.Issues;
-    }
-    
-    public SlackUser getsender()
-    {
-        return this.issues.Sender;
-    }
-            
+    }            
 }
