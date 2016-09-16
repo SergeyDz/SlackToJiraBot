@@ -3,26 +3,21 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.Jira;
-
-import com.ullink.slack.simpleslackapi.SlackUser;
+package sd.samples.akka.slacktojirabot.POCO.Slack;
 
 /**
  *
  * @author sdzyuban
  */
-public class JiraSprintMessage {
+public class SlackUserRequest {
     
-    public JiraSprintMessage(String teamName, boolean hasShowChangeLog, SlackUser sender)
+    public SlackUserRequest(String teamName, boolean hasShowChangeLog)
     {
         this.TeamName = teamName;
         this.HasShowChangeLog = hasShowChangeLog;
-        this.Sender = sender;
     }
-    
-    public final boolean HasShowChangeLog; 
     
     public final String TeamName;
     
-    public SlackUser Sender;
+    public final boolean HasShowChangeLog;
 }

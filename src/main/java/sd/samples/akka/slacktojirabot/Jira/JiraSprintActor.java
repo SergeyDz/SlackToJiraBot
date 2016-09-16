@@ -5,14 +5,14 @@
  */
 package sd.samples.akka.slacktojirabot.Jira;
 
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintsResult;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintRequest;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Optional;
-import java.util.concurrent.Future;
-import javax.ws.rs.NotFoundException;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -28,6 +28,7 @@ import org.apache.http.protocol.HttpContext;
 import sd.samples.akka.slacktojirabot.POCO.*;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprintResponse;
+import sd.samples.akka.slacktojirabot.Slack.NotFoundMessage;
 
 /**
  *
@@ -47,11 +48,12 @@ public class JiraSprintActor extends UntypedActor {
      
     @Override
     public void onReceive(Object message) throws Exception {
+        
         ActorRef sender = sender();
         
-        if(message instanceof JiraSprintMessage)
+        if(message instanceof JiraSprintRequest)
         {
-            JiraSprintMessage sprint = (JiraSprintMessage)message;
+            JiraSprintRequest sprint = (JiraSprintRequest)message;
             
             System.out.println("JiraSprintActor started.");
             CacheConfig cacheConfig = new CacheConfig();
@@ -77,15 +79,15 @@ public class JiraSprintActor extends UntypedActor {
                             
                             if(result.isPresent())
                             {
-                                sender.tell(new JiraSprintsResult(result.get()), null);
+                                sender.tell(new JiraSprintResult(result.get(), sprint.TeamName), null);
                             }
                             else
                             {
-                                sender.tell("NotFound", sender);
+                                sender.tell(new NotFoundMessage("Sprint not found. Team Name: " + sprint.TeamName), null);
                             }
                         }
                     }
-                    catch(Exception ex)
+                    catch(IOException | IllegalStateException ex)
                     {
                         System.err.println(ex.getMessage());
                     }

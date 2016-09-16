@@ -5,8 +5,7 @@
  */
 package sd.samples.akka.slacktojirabot.Jira;
 
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintsResult;
-import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
@@ -22,13 +21,9 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
-import sd.samples.akka.slacktojirabot.Mapping.Attachment.JiraIssuesToAttachmentFormatter;
 import sd.samples.akka.slacktojirabot.Mapping.JiraIssueMapper;
-import sd.samples.akka.slacktojirabot.Mapping.Message.JiraIssuesResultFormatter;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterResult;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
 
 
 /**
@@ -48,9 +43,9 @@ public class JiraFilterActor extends UntypedActor {
     
     @Override
     public void onReceive(Object message) throws Exception {
-        if(message instanceof JiraSprintsResult)
+        if(message instanceof JiraSprintResult)
         {
-            JiraSprintsResult request = (JiraSprintsResult)message;
+            JiraSprintResult request = (JiraSprintResult)message;
             JiraRestClientFactory factory = new AsynchronousJiraRestClientFactory();
             final URI jiraServerUri = new URI(config.JiraBaseUrl);
             final JiraRestClient restClient = factory.createWithBasicHttpAuthentication(jiraServerUri, config.JiraUser, config.JiraPassword);

@@ -3,18 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.Slack;
-
-import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
+package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
 /**
  *
  * @author sdzyuban
  */
-public class NotFoundMessage extends SendMessage{
+public class JiraSprintRequest {
     
-    public NotFoundMessage(String message) {
-        super(message);
+    public JiraSprintRequest(String teamName)
+    {
+        this.TeamName = teamName;
     }
     
+    public final String TeamName;
 }

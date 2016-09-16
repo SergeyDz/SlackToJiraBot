@@ -9,7 +9,6 @@ import akka.actor.UntypedActor;
 import com.ullink.slack.simpleslackapi.SlackAttachment;
 import com.ullink.slack.simpleslackapi.SlackUser;
 import com.ullink.slack.simpleslackapi.impl.SlackChatConfiguration;
-import java.util.ArrayList;
 import java.util.Arrays;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendAttachment;
@@ -38,12 +37,8 @@ public class SlackUserMessageSenderActor extends UntypedActor {
     
     @Override
     public void onReceive(Object message) throws Exception {
-        if(message instanceof SendMessage){
-            SendMessage sendMessage = (SendMessage)message;
-            
-            connection.Session.sendMessageToUser(this.sender, sendMessage.Message, new SlackAttachment());
-            
-        } else if(message instanceof SendAttachment){
+        
+        if(message instanceof SendAttachment){
             
             SendAttachment source = (SendAttachment)message;
             SlackAttachment header = new SlackAttachment();
@@ -78,6 +73,13 @@ public class SlackUserMessageSenderActor extends UntypedActor {
             }
             
             connection.Session.sendMessageToUser(this.sender, ":robot_face: work done !", null);
+        }
+        
+        else if(message instanceof SendMessage){
+            SendMessage sendMessage = (SendMessage)message;
+            
+            connection.Session.sendMessageToUser(this.sender, sendMessage.Message, new SlackAttachment());
+            
         }
     }
        

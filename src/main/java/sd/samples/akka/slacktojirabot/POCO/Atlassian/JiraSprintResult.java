@@ -5,20 +5,22 @@
  */
 package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
-import com.ullink.slack.simpleslackapi.SlackUser;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
 
 /**
  *
  * @author sdzyuban
  */
-public class JiraSprintsResult {
+public class JiraSprintResult {
     
-    public JiraSprintsResult(JiraSprint sprint)
+    public JiraSprintResult(JiraSprint sprint, String teamName)
     {
         this.Sprint = sprint;
+        this.TeamName = teamName;
     }
     
     public final JiraSprint Sprint; 
+    
+    public final String TeamName;
 
 }

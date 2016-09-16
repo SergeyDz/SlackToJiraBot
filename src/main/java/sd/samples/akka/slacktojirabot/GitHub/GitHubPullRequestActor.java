@@ -202,7 +202,7 @@ public class GitHubPullRequestActor extends UntypedActor {
             }
             
             // call Jira Actor back
-            getSender().tell(new LinkPullRequests(new JiraIssuesContainer(issues), request.HasShowChangeLog), null);
+            getSender().tell(new LinkPullRequests(issues, request.HasShowChangeLog), null);
             
         }
         else

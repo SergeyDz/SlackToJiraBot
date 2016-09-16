@@ -5,19 +5,15 @@
  */
 package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
+import sd.samples.akka.slacktojirabot.POCO.Slack.SlackUserRequest;
+
 /**
  *
  * @author sdzyuban
  */
-public class JiraRequest {
-    
-    public final String Team;
-    
-    public final boolean HasShowChangeLog;
-    
-    public JiraRequest(String team, boolean hasShowChangeLog)
-    {
-        this.Team = team;
-        this.HasShowChangeLog = hasShowChangeLog;        
-    }    
+public class JiraRequest extends SlackUserRequest { 
+
+    public JiraRequest(String teamName, boolean hasShowChangeLog) {
+        super(teamName, hasShowChangeLog);
+    }
 }

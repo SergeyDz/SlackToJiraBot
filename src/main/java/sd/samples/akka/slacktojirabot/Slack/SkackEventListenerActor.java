@@ -90,7 +90,7 @@ public class SkackEventListenerActor extends UntypedActor {
                     
                     JiraRequest request = new JiraRequest(team, hasShowChangeLog);
                     ActorRef privateMessageSender = context().actorOf(Props.create(SlackUserMessageSenderActor.class, connection, this.config, sender));
-                    ActorRef jiraActor = context().actorOf(Props.create(JiraActor.class, privateMessageSender, this.config));
+                    ActorRef jiraActor = context().actorOf(Props.create(JiraActor.class, request, privateMessageSender, this.config));
                     jiraActor.tell(request, null);
                 }
             } 
