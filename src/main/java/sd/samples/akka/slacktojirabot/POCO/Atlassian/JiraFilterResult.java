@@ -3,20 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.POCO.Slack;
-import com.ullink.slack.simpleslackapi.SlackUser;
+package sd.samples.akka.slacktojirabot.POCO.Atlassian;
+
 import java.util.List;
 
 /**
  *
  * @author sdzyuban
  */
-public class SendMessage {
+public class JiraFilterResult extends JiraIssuesContainer {
     
-    public SendMessage(String message)
-    {
-        this.Message = message;
+    public JiraFilterResult(List<Issue> issues) {
+        super(issues);
     }
     
-    public String Message;
 }

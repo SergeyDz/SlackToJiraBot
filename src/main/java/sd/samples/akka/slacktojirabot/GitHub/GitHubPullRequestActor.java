@@ -34,6 +34,7 @@ import sd.samples.akka.slacktojirabot.Mapping.CommitMapper;
 import sd.samples.akka.slacktojirabot.Mapping.PullRequestMapper;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 

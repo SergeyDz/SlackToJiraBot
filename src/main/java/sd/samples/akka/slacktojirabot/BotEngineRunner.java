@@ -7,12 +7,15 @@ package sd.samples.akka.slacktojirabot;
 
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
+import akka.actor.Props;
 import akka.dispatch.Futures;
 import akka.dispatch.OnSuccess;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import scala.concurrent.Future;
+import sd.samples.akka.slacktojirabot.GitHub.GitHubPullRequestActor;
+import sd.samples.akka.slacktojirabot.Jira.JiraSprintActor;
 
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.Slack.SlackChannelListener;
@@ -28,6 +31,9 @@ public class BotEngineRunner {
         BotConfigurationInfo config = new BotConfigurationInfo(args);
         
         ActorSystem system = ActorSystem.create("bot-system");
+        
+        ActorRef jiraAgileActor = system.actorOf(Props.create(JiraSprintActor.class, config), "JiraAgileActor");
+        ActorRef gitHubActor = system.actorOf(Props.create(GitHubPullRequestActor.class, config), "GitHubActor");
        
         List<Future<ActorRef>> actors = config.Channels.stream()
                 .map(a -> Futures.future(new SlackChannelListener(system, config, a), system.dispatcher()))

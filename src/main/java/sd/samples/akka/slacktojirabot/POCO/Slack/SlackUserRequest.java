@@ -4,19 +4,20 @@
  * and open the template in the editor.
  */
 package sd.samples.akka.slacktojirabot.POCO.Slack;
-import com.ullink.slack.simpleslackapi.SlackUser;
-import java.util.List;
 
 /**
  *
  * @author sdzyuban
  */
-public class SendMessage {
+public class SlackUserRequest {
     
-    public SendMessage(String message)
+    public SlackUserRequest(String teamName, boolean hasShowChangeLog)
     {
-        this.Message = message;
+        this.TeamName = teamName;
+        this.HasShowChangeLog = hasShowChangeLog;
     }
     
-    public String Message;
+    public final String TeamName;
+    
+    public final boolean HasShowChangeLog;
 }

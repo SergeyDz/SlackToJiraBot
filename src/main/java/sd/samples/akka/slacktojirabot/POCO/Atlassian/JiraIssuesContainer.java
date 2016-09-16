@@ -3,7 +3,8 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.POCO.Slack;
+package sd.samples.akka.slacktojirabot.POCO.Atlassian;
+
 import com.ullink.slack.simpleslackapi.SlackUser;
 import java.util.List;
 
@@ -11,12 +12,12 @@ import java.util.List;
  *
  * @author sdzyuban
  */
-public class SendMessage {
+public class JiraIssuesContainer {
     
-    public SendMessage(String message)
+    public JiraIssuesContainer(List<Issue> issues)
     {
-        this.Message = message;
+        this.Issues = issues;
     }
     
-    public String Message;
+    public List<Issue> Issues;
 }

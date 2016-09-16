@@ -5,16 +5,18 @@
  */
 package sd.samples.akka.slacktojirabot.POCO.Slack;
 
-import sd.samples.akka.slacktojirabot.POCO.Slack.Attachment;
+import com.ullink.slack.simpleslackapi.SlackUser;
 import java.util.List;
 
 /**
  *
  * @author sdzyuban
  */
-public class SendAttachment {
-    
-    public String Header;
+public class SendAttachment extends SendMessage {
     
     public List<Attachment> Attachments;
+
+    public SendAttachment(String message) {
+        super(message);
+    }
 }

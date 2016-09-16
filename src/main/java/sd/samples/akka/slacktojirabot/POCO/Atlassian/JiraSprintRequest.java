@@ -3,15 +3,18 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.POCO.Slack;
+package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
 /**
  *
  * @author sdzyuban
  */
-public class Attachment {
+public class JiraSprintRequest {
     
-    public String Message;
+    public JiraSprintRequest(String teamName)
+    {
+        this.TeamName = teamName;
+    }
     
-    public String ChangelogItems;
+    public final String TeamName;
 }

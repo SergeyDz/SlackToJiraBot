@@ -3,21 +3,24 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package sd.samples.akka.slacktojirabot.Jira;
+package sd.samples.akka.slacktojirabot.POCO.Atlassian;
+
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
 
 /**
  *
  * @author sdzyuban
  */
-public class JiraSprintMessage {
+public class JiraSprintResult {
     
-    public JiraSprintMessage(String teamName, boolean hasShowChangeLog)
+    public JiraSprintResult(JiraSprint sprint, String teamName)
     {
+        this.Sprint = sprint;
         this.TeamName = teamName;
-        this.HasShowChangeLog = hasShowChangeLog;
     }
     
-    public final boolean HasShowChangeLog; 
+    public final JiraSprint Sprint; 
     
     public final String TeamName;
+
 }

@@ -33,9 +33,9 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
     
     @Override
     public SendAttachment call() throws Exception {
-        SendAttachment attachments = new SendAttachment();
+        SendAttachment attachments = new SendAttachment("");
         
-        attachments.Header = new JiraStatisticsFormatter(this.issues).call();
+        attachments.Message = new JiraStatisticsFormatter(this.issues).call();
         attachments.Attachments = new ArrayList<>();
         
         issues.forEach((issue) -> {
