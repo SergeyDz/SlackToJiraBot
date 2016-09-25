@@ -6,13 +6,18 @@
 package sd.samples.akka.slacktojirabot.Jira;
 
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintRequest;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
 import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpResponse;
@@ -26,6 +31,7 @@ import org.apache.http.nio.client.HttpAsyncClient;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import sd.samples.akka.slacktojirabot.POCO.*;
+import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprintResponse;
 import sd.samples.akka.slacktojirabot.Slack.NotFoundMessage;
@@ -40,6 +46,8 @@ public class JiraSprintActor extends UntypedActor {
     
     private final ObjectMapper objectMapper;
     
+    private List<String> boards = Arrays.asList("2", "17");
+    
     public JiraSprintActor(BotConfigurationInfo config)
     {
         this.config = config;
@@ -51,6 +59,8 @@ public class JiraSprintActor extends UntypedActor {
         
         ActorRef sender = sender();
         
+        List<CompletableFuture<List<JiraSprint>>> futures = new ArrayList<>();
+        
         if(message instanceof JiraSprintRequest)
         {
             JiraSprintRequest sprint = (JiraSprintRequest)message;
@@ -58,54 +68,76 @@ public class JiraSprintActor extends UntypedActor {
             System.out.println("JiraSprintActor started.");
             CacheConfig cacheConfig = new CacheConfig();
             HttpAsyncClient client  = new CachingHttpAsyncClient(cacheConfig);
-
             String token = new String(Base64.encodeBase64((config.JiraUser + ":" + config.JiraPassword).getBytes()));
+            BasicHeader authorization = new BasicHeader("Authorization", "Basic " + token);
+            
+            client.start();
 
-            HttpUriRequest request = new HttpGet(config.JiraBaseUrl + "/rest/agile/latest/board/2/sprint?state=active");
-            request.addHeader(new BasicHeader("Authorization", "Basic " + token));
-            HttpContext context = new BasicHttpContext();
-
-            FutureCallback<HttpResponse> callback = new FutureCallback<HttpResponse>() {
-                @Override
-                public void completed(HttpResponse response) {
-                    try
-                    {
-                        JiraSprintResponse sprints = objectMapper.readValue(response.getEntity().getContent(), JiraSprintResponse.class);
-                        if(sprints != null && sprints.values != null)
+            boards.forEach(a -> {
+                HttpUriRequest request = new HttpGet(config.JiraBaseUrl + "/rest/agile/latest/board/" + a + "/sprint?state=active");
+                request.addHeader(authorization);
+                HttpContext context = new BasicHttpContext();
+                
+                CompletableFuture<List<JiraSprint>> future = new CompletableFuture<>();
+                
+                FutureCallback<HttpResponse> callback = new FutureCallback<HttpResponse>() {
+                    @Override
+                    public void completed(HttpResponse response) {
+                        try
                         {
-                            Optional<JiraSprint> result = Arrays.stream(sprints.values)
-                                    .filter(c -> StringUtils.containsIgnoreCase(c.name, sprint.TeamName))
-                                    .findFirst();
-                            
-                            if(result.isPresent())
-                            {
-                                sender.tell(new JiraSprintResult(result.get(), sprint.TeamName), null);
-                            }
-                            else
-                            {
-                                sender.tell(new NotFoundMessage("Sprint not found. Team Name: " + sprint.TeamName), null);
-                            }
+                            JiraSprintResponse sprints = objectMapper.readValue(response.getEntity().getContent(), JiraSprintResponse.class);
+                            future.complete(Arrays.asList(sprints.values));
+                        }
+                        catch(IOException | IllegalStateException ex)
+                        {
+                            System.err.println(ex.getMessage());
+                            future.completeExceptionally(ex);
                         }
                     }
-                    catch(IOException | IllegalStateException ex)
-                    {
+
+                    @Override
+                    public void failed(Exception ex) {
                         System.err.println(ex.getMessage());
+                        future.completeExceptionally(ex);
                     }
-                }
 
-                @Override
-                public void failed(Exception ex) {
-                    System.err.println(ex.getMessage());
+                    @Override
+                    public void cancelled() {
+                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                    }
+                };
+                
+                futures.add(future);
+                client.execute(request, context, callback);
+            });
+            
+            all(futures).thenAccept(list -> {
+                Optional<JiraSprint> r = list.stream()
+                        .filter(c -> StringUtils.containsIgnoreCase(c.name, sprint.TeamName) 
+                                || (StringUtils.containsIgnoreCase(c.name, "Sprint") && (StringUtils.containsIgnoreCase(sprint.TeamName, "DevOps"))))
+                        .findFirst();
+                
+                if(r.isPresent())
+                {
+                    sender.tell(new JiraSprintResult(r.get(), sprint.TeamName), null);
                 }
-
-                @Override
-                public void cancelled() {
-                    throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+                else
+                {
+                    sender.tell(new NotFoundMessage("Sprint not found. Team Name: " + sprint.TeamName), null);
                 }
-            };
+            });
+            
+        }
+    }
+    
+    public static <T> CompletableFuture<List<T>> all(List<CompletableFuture<List<T>>> futures) {
+    CompletableFuture[] cfs = futures.toArray(new CompletableFuture[futures.size()]);
 
-            client.start();
-            client.execute(request, context, callback);
-            }
-    } 
+    return CompletableFuture.allOf(cfs)
+            .thenApply(v -> futures.stream()
+                    .map(CompletableFuture::join)
+                    .flatMap(List::stream)
+                    .collect(Collectors.toList())
+            );
+    }
 }

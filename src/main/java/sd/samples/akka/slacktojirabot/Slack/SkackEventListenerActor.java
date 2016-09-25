@@ -69,10 +69,10 @@ public class SkackEventListenerActor extends UntypedActor {
             if(messageContent.equals("jirabot"))
             {
                 String commands = String.format("Commands: \n%s \n%s \n%s \n%s", 
-                        "_jirabot sprint_", 
-                        "_jirabot sprint *team*_",
-                        "_jirabot sprint status_",
-                        "_jirabot sprint *team*_ status");
+                        "_jirabot_", 
+                        "_jirabot *team*_",
+                        "_jirabot status_",
+                        "_jirabot *team*_ status");
                 senderActor.tell(new SendMessage(commands), null);
             }
             else if(messageContent.startsWith("jirabot"))
@@ -86,7 +86,7 @@ public class SkackEventListenerActor extends UntypedActor {
                 else
                 {
                     boolean hasShowChangeLog = messageContent.contains("status");
-                    senderActor.tell(new SendMessage(":robot_face: Team found - " + team + "\n:robot_face:. Please wait for private response.:clock9:"), null);
+                    senderActor.tell(new SendMessage("Team found - " + team + ". Please wait for private response.:clock9:"), null);
                     
                     JiraRequest request = new JiraRequest(team, hasShowChangeLog);
                     ActorRef privateMessageSender = context().actorOf(Props.create(SlackUserMessageSenderActor.class, connection, this.config, sender));
