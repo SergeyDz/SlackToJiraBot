@@ -8,6 +8,7 @@ package sd.samples.akka.slacktojirabot.Slack;
 import akka.actor.ActorRef;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import akka.routing.RoundRobinPool;
 import com.ullink.slack.simpleslackapi.SlackChannel;
 import com.ullink.slack.simpleslackapi.SlackSession;
 import com.ullink.slack.simpleslackapi.SlackUser;
@@ -29,6 +30,7 @@ public class SkackEventListenerActor extends UntypedActor {
 
     private final BotConfigurationInfo config;
     private final String channel;
+    private final RoundRobinPool pool = new RoundRobinPool(8);
     
     private SlackSession session;
     
@@ -49,7 +51,7 @@ public class SkackEventListenerActor extends UntypedActor {
             SlackConnectionInfo connection = new SlackConnectionInfo(session, theChannel);
             
             ActorRef channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, connection, this.config));
-            channelSenderActor.tell(new SendMessage(String.format("Connected %s. Version: %s. (DevOps Team support added !)", this.channel, config.Version)), null);
+            channelSenderActor.tell(new SendMessage(String.format("Connected %s. (DevOps Team support added !)", this.channel)), null);
 
             registeringAListener(connection, channelSenderActor);
             System.out.println("Connection success");
@@ -87,10 +89,9 @@ public class SkackEventListenerActor extends UntypedActor {
                 {
                     boolean hasShowChangeLog = messageContent.contains("status");
                     senderActor.tell(new SendMessage("Team found - " + team + ". Please wait for private response.:clock9:"), null);
-                    
                     JiraRequest request = new JiraRequest(team, hasShowChangeLog);
-                    ActorRef privateMessageSender = context().actorOf(Props.create(SlackUserMessageSenderActor.class, connection, this.config, sender));
-                    ActorRef jiraActor = context().actorOf(Props.create(JiraActor.class, request, privateMessageSender, this.config));
+                    ActorRef privateMessageSender = context().actorOf(pool.props(Props.create(SlackUserMessageSenderActor.class, connection, this.config, sender)));
+                    ActorRef jiraActor = context().actorOf(pool.props(Props.create(JiraActor.class, request, privateMessageSender, this.config)));
                     jiraActor.tell(request, null);
                 }
             } 

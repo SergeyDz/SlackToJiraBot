@@ -17,8 +17,10 @@ import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintRequest;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
+import sd.samples.akka.slacktojirabot.POCO.Slack.SendAttachment;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SlackUserRequest;
+import sd.samples.akka.slacktojirabot.Slack.NotFoundMessage;
 
 /**
  *
@@ -46,19 +48,19 @@ public class JiraActor extends UntypedActor {
             ActorSelection sprintActor = context().actorSelection("akka://bot-system/user/JiraAgileActor");
             sprintActor.tell(new JiraSprintRequest(slackRequest.TeamName), self());
         }
-        if(message instanceof JiraSprintResult)
+        else if(message instanceof JiraSprintResult)
         {
             JiraSprintResult jiraSprintResult = (JiraSprintResult)message;
             ActorRef jiraFilterActor = context().actorOf(Props.create(JiraFilterActor.class, this.slackRequest.HasShowChangeLog, this.config));
             jiraFilterActor.tell(jiraSprintResult, self());
         }
-        if(message instanceof JiraFilterResult)
+        else if(message instanceof JiraFilterResult)
         {
             JiraFilterResult jiraFilterResult = (JiraFilterResult)message;
             ActorSelection gitHubActor = context().actorSelection("akka://bot-system/user/GitHubActor");
             gitHubActor.tell(new LinkPullRequests(jiraFilterResult.Issues, this.slackRequest.HasShowChangeLog), self());
         }
-        if(message instanceof LinkPullRequests)
+        else if(message instanceof LinkPullRequests)
         {
             LinkPullRequests result = (LinkPullRequests)message;
             if(config.HasUseSlackAttachment)
@@ -69,6 +71,11 @@ public class JiraActor extends UntypedActor {
             {
                 senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(result.getIssues(), config).call()), self());
             }
+        }
+        else if(message instanceof NotFoundMessage)
+        {
+            NotFoundMessage notFound = (NotFoundMessage)message;
+            senderActor.tell(new SendAttachment(notFound.Message), senderActor);
         }
     }
     

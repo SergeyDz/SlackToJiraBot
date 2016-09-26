@@ -8,6 +8,7 @@ package sd.samples.akka.slacktojirabot.Slack;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import akka.routing.RoundRobinPool;
 import java.util.concurrent.Callable;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 
@@ -21,7 +22,6 @@ public class SlackChannelListener implements Callable<ActorRef> {
     private final String channel;
     private final BotConfigurationInfo config;
     
-    
     public SlackChannelListener(ActorSystem system, BotConfigurationInfo config, String channel)
     {
         this.channel = channel;
@@ -32,7 +32,7 @@ public class SlackChannelListener implements Callable<ActorRef> {
     @Override
     public ActorRef call() throws Exception {
         System.out.println("Creting Actor for channel " + this.channel);
-        return system.actorOf(Props.create(SkackEventListenerActor.class, config, this.channel), "SlackEventListener-" + this.channel);
+        return system.actorOf(new RoundRobinPool(4).props(Props.create(SkackEventListenerActor.class, config, this.channel)));
     }
     
 }
