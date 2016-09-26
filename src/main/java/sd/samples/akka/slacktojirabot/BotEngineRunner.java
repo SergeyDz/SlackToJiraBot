@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 import scala.concurrent.Future;
-import sd.samples.akka.slacktojirabot.GitHub.GitHubPullRequestActor;
+import sd.samples.akka.slacktojirabot.GitHub.GitHubActor;
 import sd.samples.akka.slacktojirabot.Jira.JiraSprintActor;
 
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
@@ -33,7 +33,7 @@ public class BotEngineRunner {
         ActorSystem system = ActorSystem.create("bot-system");
         
         ActorRef jiraAgileActor = system.actorOf(Props.create(JiraSprintActor.class, config), "JiraAgileActor");
-        ActorRef gitHubActor = system.actorOf(Props.create(GitHubPullRequestActor.class, config), "GitHubActor");
+        ActorRef gitHubActor = system.actorOf(Props.create(GitHubActor.class, config), "GitHubActor");
        
         List<Future<ActorRef>> actors = config.Channels.stream()
                 .map(a -> Futures.future(new SlackChannelListener(system, config, a), system.dispatcher()))

@@ -34,7 +34,6 @@ import sd.samples.akka.slacktojirabot.Mapping.CommitMapper;
 import sd.samples.akka.slacktojirabot.Mapping.PullRequestMapper;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 
@@ -42,7 +41,7 @@ import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
  *
  * @author sdzyuban
  */
-public class GitHubPullRequestActor extends UntypedActor {    
+public class GitHubActor extends UntypedActor {    
     
     private final BotConfigurationInfo config;
     
@@ -56,7 +55,7 @@ public class GitHubPullRequestActor extends UntypedActor {
     PullRequestService pullRequestService = new PullRequestService();
     CommitService commitService  = new CommitService();
     
-    public GitHubPullRequestActor(BotConfigurationInfo config)
+    public GitHubActor(BotConfigurationInfo config)
     {
         this.config = config;
 
@@ -155,9 +154,9 @@ public class GitHubPullRequestActor extends UntypedActor {
                             issue.PullRequests.add(new PullRequestMapper(statuses).apply(pull));
                             
                         } catch (ExecutionException ex) {
-                            Logger.getLogger(GitHubPullRequestActor.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(GitHubActor.class.getName()).log(Level.SEVERE, null, ex);
                         } catch (IOException ex) {
-                            Logger.getLogger(GitHubPullRequestActor.class.getName()).log(Level.SEVERE, null, ex);
+                            Logger.getLogger(GitHubActor.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
                 });
@@ -194,7 +193,7 @@ public class GitHubPullRequestActor extends UntypedActor {
                                 } 
                                 catch (ExecutionException ex) {
                                     System.err.println(ex);
-                                    Logger.getLogger(GitHubPullRequestActor.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(GitHubActor.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             });
                     

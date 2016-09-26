@@ -10,7 +10,6 @@ import akka.actor.ActorRef;
 import akka.actor.UntypedActor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -32,7 +31,6 @@ import org.apache.http.protocol.HttpContext;
 import sd.samples.akka.slacktojirabot.POCO.*;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprintResponse;
 import sd.samples.akka.slacktojirabot.Slack.NotFoundMessage;
 
 /**
