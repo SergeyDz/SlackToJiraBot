@@ -57,6 +57,9 @@ public class BotConfigurationInfo {
                 .stream().map(x -> x.trim())
                 .collect(Collectors.toList());
         
+        Package p = getClass().getPackage();
+        this.Version = p.getImplementationVersion();
+        
     }
     
     public String SlackAuthorizationKey; 
@@ -74,4 +77,6 @@ public class BotConfigurationInfo {
     public String GitHubToken;
 
     public List<String> Channels;
+    
+    public String Version;
 }

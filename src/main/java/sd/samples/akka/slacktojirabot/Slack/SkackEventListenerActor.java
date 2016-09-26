@@ -49,7 +49,7 @@ public class SkackEventListenerActor extends UntypedActor {
             SlackConnectionInfo connection = new SlackConnectionInfo(session, theChannel);
             
             ActorRef channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, connection, this.config));
-            channelSenderActor.tell(new SendMessage("Connected " + channel), null);
+            channelSenderActor.tell(new SendMessage(String.format("Connected %s. Version: %s. (DevOps Team support added !)", this.channel, config.Version)), null);
 
             registeringAListener(connection, channelSenderActor);
             System.out.println("Connection success");

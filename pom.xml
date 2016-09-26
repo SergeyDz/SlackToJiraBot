@@ -10,33 +10,71 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    
+    <scm>
+        <connection>scm:git:https://github.com/SergeyDz/SlackToJiraBot.git</connection>
+        <developerConnection>scm:git:https://github.com/SergeyDz/SlackToJiraBot.git</developerConnection>
+        <url>https://github.com/SergeyDz/SlackToJiraBot/master</url>
+    </scm>
+    
     <build>
         <plugins>
             <plugin>
-            <artifactId>maven-assembly-plugin</artifactId>
-            <executions>
-              <execution>
-                <phase>package</phase>
-                <goals>
-                  <goal>single</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-
-              <archive>
-              <manifest>
-                <addClasspath>true</addClasspath>
-                <mainClass>sd.samples.akka.slacktojirabot.BotEngineRunner</mainClass>
-              </manifest>
-              </archive>
-
-              <descriptorRefs>
-                <descriptorRef>jar-with-dependencies</descriptorRef>
-              </descriptorRefs>
-
-            </configuration>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <executions>
+                  <execution>
+                    <phase>package</phase>
+                    <goals>
+                      <goal>single</goal>
+                    </goals>
+                  </execution>
+                </executions>
+                <configuration>
+                  <archive>
+                  <manifest>
+                    <addClasspath>true</addClasspath>
+                    <mainClass>sd.samples.akka.slacktojirabot.BotEngineRunner</mainClass>
+                  </manifest>
+                  </archive>
+                  <descriptorRefs>
+                    <descriptorRef>jar-with-dependencies</descriptorRef>
+                  </descriptorRefs>
+                </configuration>
             </plugin> 
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                  <archive>
+                    <manifest>
+                      <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                      <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                    </manifest>
+                  </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <artifactId>maven-scm-plugin</artifactId>
+                <executions>
+                  <execution>
+                    <id>getting-scm.revision</id>
+                    <phase>validate</phase>
+                    <goals>
+                      <goal>update</goal>
+                    </goals>
+                  </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                  <archive>
+                    <manifestEntries>
+                      <Implementation-Version>${this.version}.${scm.revision}</Implementation-Version>
+                    </manifestEntries>
+                  </archive>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
