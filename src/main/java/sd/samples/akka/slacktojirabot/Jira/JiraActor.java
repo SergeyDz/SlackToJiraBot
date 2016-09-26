@@ -9,15 +9,12 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
-import sd.samples.akka.slacktojirabot.GitHub.GitHubPullRequestActor;
 import sd.samples.akka.slacktojirabot.Mapping.Attachment.JiraIssuesToAttachmentFormatter;
 import sd.samples.akka.slacktojirabot.Mapping.Message.JiraIssuesResultFormatter;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterResult;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraIssuesContainer;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraRequest;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintRequest;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
-import sd.samples.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Github.LinkPullRequests;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
@@ -66,11 +63,11 @@ public class JiraActor extends UntypedActor {
             LinkPullRequests result = (LinkPullRequests)message;
             if(config.HasUseSlackAttachment)
             {
-                senderActor.tell(new JiraIssuesToAttachmentFormatter(result.getIssues() , config).call(), null);
+                senderActor.tell(new JiraIssuesToAttachmentFormatter(result.getIssues() , config).call(), self());
             }
             else
             {
-                senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(result.getIssues(), config).call()), null);
+                senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(result.getIssues(), config).call()), self());
             }
         }
     }

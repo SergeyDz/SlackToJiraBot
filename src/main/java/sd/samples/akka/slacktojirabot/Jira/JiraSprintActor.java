@@ -16,7 +16,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang.StringUtils;
@@ -79,55 +78,31 @@ public class JiraSprintActor extends UntypedActor {
                 HttpContext context = new BasicHttpContext();
                 
                 CompletableFuture<List<JiraSprint>> future = new CompletableFuture<>();
-                
-                FutureCallback<HttpResponse> callback = new FutureCallback<HttpResponse>() {
-                    @Override
-                    public void completed(HttpResponse response) {
-                        try
-                        {
-                            JiraSprintResponse sprints = objectMapper.readValue(response.getEntity().getContent(), JiraSprintResponse.class);
-                            future.complete(Arrays.asList(sprints.values));
-                        }
-                        catch(IOException | IllegalStateException ex)
-                        {
-                            System.err.println(ex.getMessage());
-                            future.completeExceptionally(ex);
-                        }
-                    }
-
-                    @Override
-                    public void failed(Exception ex) {
-                        System.err.println(ex.getMessage());
-                        future.completeExceptionally(ex);
-                    }
-
-                    @Override
-                    public void cancelled() {
-                        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-                    }
-                };
-                
+                FutureCallback<HttpResponse> callback = new JiraSprintCallback(future);
                 futures.add(future);
                 client.execute(request, context, callback);
             });
             
-            all(futures).thenAccept(list -> {
-                Optional<JiraSprint> r = list.stream()
-                        .filter(c -> StringUtils.containsIgnoreCase(c.name, sprint.TeamName) 
-                                || (StringUtils.containsIgnoreCase(c.name, "Sprint") && (StringUtils.containsIgnoreCase(sprint.TeamName, "DevOps"))))
-                        .findFirst();
-                
-                if(r.isPresent())
-                {
-                    sender.tell(new JiraSprintResult(r.get(), sprint.TeamName), null);
-                }
-                else
-                {
-                    sender.tell(new NotFoundMessage("Sprint not found. Team Name: " + sprint.TeamName), null);
-                }
-            });
-            
+            processCallback(futures, sprint, sender); 
         }
+    }
+
+    private void processCallback(List<CompletableFuture<List<JiraSprint>>> futures, JiraSprintRequest sprint, ActorRef sender) {
+        all(futures).thenAccept(list -> {
+            Optional<JiraSprint> r = list.stream()
+                    .filter(c -> StringUtils.containsIgnoreCase(c.name, sprint.TeamName)
+                            || (StringUtils.containsIgnoreCase(c.name, "Sprint") && (StringUtils.containsIgnoreCase(sprint.TeamName, "DevOps"))))
+                    .findFirst();
+            
+            if(r.isPresent())
+            {
+                sender.tell(new JiraSprintResult(r.get(), sprint.TeamName), null);
+            }
+            else
+            {
+                sender.tell(new NotFoundMessage("Sprint not found. Team Name: " + sprint.TeamName), null);
+            }
+        });
     }
     
     public static <T> CompletableFuture<List<T>> all(List<CompletableFuture<List<T>>> futures) {

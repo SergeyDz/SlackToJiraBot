@@ -5,6 +5,7 @@
  */
 package sd.samples.akka.slacktojirabot.Slack;
 
+import akka.actor.PoisonPill;
 import akka.actor.UntypedActor;
 import com.ullink.slack.simpleslackapi.SlackAttachment;
 import com.ullink.slack.simpleslackapi.SlackUser;
@@ -73,13 +74,12 @@ public class SlackUserMessageSenderActor extends UntypedActor {
             }
             
             connection.Session.sendMessageToUser(this.sender, "Work done !", null);
+            sender().tell(PoisonPill.getInstance(), null);
         }
         
         else if(message instanceof SendMessage){
             SendMessage sendMessage = (SendMessage)message;
-            
             connection.Session.sendMessageToUser(this.sender, sendMessage.Message, new SlackAttachment());
-            
         }
     }
        

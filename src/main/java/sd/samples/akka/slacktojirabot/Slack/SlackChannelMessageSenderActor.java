@@ -38,7 +38,6 @@ public class SlackChannelMessageSenderActor extends UntypedActor {
     public void onReceive(Object message) throws Exception {
          if(message instanceof SendMessage){
             SendMessage sendMessage = (SendMessage)message;
-            
             connection.Session.sendMessage(this.channel, sendMessage.Message); 
         }
     }
