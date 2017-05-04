@@ -6,7 +6,6 @@
 package sd.samples.akka.slacktojirabot.Mapping;
 
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
-import sd.samples.akka.slacktojirabot.POCO.Github.Status;
 
 /**
  *
@@ -119,48 +118,7 @@ public class JiraFormatter {
         }
     }
     
-    public static String GetPullRequests(Issue issue)
-    {
-        StringBuilder result = new StringBuilder();
-        
-        if(issue != null && issue.PullRequests != null && issue.PullRequests.size() > 0)
-        {
-            issue.PullRequests.forEach(a -> {
-                if(a.Statuses != null && !a.Statuses.isEmpty())
-                {
-                    Status status = a.Statuses.stream().findFirst().get();
-                    
-                    if(null != status.Name)
-                    switch (status.Name) {
-                        case "success":
-                            result.append("<").append(a.Url).append("|").append(":github_mergable:").append(">");
-                            result.append("<").append(status.Url).append("|").append(":jenkins_build_success:").append(">");
-                            break;
-                        case "pending":
-                            result.append("<").append(a.Url).append("|").append(":github_build:").append(">");
-                            result.append("<").append(status.Url).append("|").append(":jenkins_building:").append(">");
-                            break;
-                        case "failed":
-                        case "failure":
-                            result.append("<").append(a.Url).append("|").append(":github_failed:").append(">");
-                            result.append("<").append(status.Url).append("|").append(":jenkins_build_failed:").append(">");
-                            break;
-                        default:
-                            result.append("<").append(a.Url).append("|").append(":github:").append(">");
-                            break;
-                    }
-                }
-                else
-                {
-                    result.append("<").append(a.Url).append("|").append(":github:").append(">");
-                }
-            });
-        }
-        
-        return result.toString();
-    }
-    
-     public static String GetFlags(Issue issue) {
+    public static String GetFlags(Issue issue) {
         StringBuilder builder = new StringBuilder();
         
         if(issue.Flagged != null && !issue.Flagged.isEmpty() && issue.Flagged.stream().anyMatch(a -> a.contains("Definition")))

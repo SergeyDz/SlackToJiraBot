@@ -7,6 +7,7 @@ package sd.samples.akka.slacktojirabot.Jira;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.Arrays;
 import org.apache.http.concurrent.*;
 import java.util.List;
@@ -35,6 +36,7 @@ public class JiraSprintCallback implements FutureCallback<HttpResponse>{
     public void completed(HttpResponse response) {
         try
         {
+            InputStream content = response.getEntity().getContent();
             JiraSprintResponse sprints = objectMapper.readValue(response.getEntity().getContent(), JiraSprintResponse.class);
             future.complete(Arrays.asList(sprints.values));
         }

@@ -43,7 +43,7 @@ public class JiraSprintActor extends UntypedActor {
     
     private final ObjectMapper objectMapper;
     
-    private List<String> boards = Arrays.asList("2", "17");
+    private List<String> boards = Arrays.asList("430");
     
     public JiraSprintActor(BotConfigurationInfo config)
     {
@@ -88,8 +88,6 @@ public class JiraSprintActor extends UntypedActor {
     private void processCallback(List<CompletableFuture<List<JiraSprint>>> futures, JiraSprintRequest sprint, ActorRef sender) {
         all(futures).thenAccept(list -> {
             Optional<JiraSprint> r = list.stream()
-                    .filter(c -> StringUtils.containsIgnoreCase(c.name, sprint.TeamName)
-                            || (StringUtils.containsIgnoreCase(c.name, "Sprint") && (StringUtils.containsIgnoreCase(sprint.TeamName, "DevOps"))))
                     .findFirst();
             
             if(r.isPresent())

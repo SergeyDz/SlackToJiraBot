@@ -14,7 +14,6 @@ import sd.samples.akka.slacktojirabot.Mapping.JiraFormatter;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraChangelogItem;
-import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
 
 /**
  *
@@ -23,7 +22,6 @@ import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
 public class JiraChangelogFormatter{
 
     private final List<JiraChangelogItem> logs;
-    private final List<Commit> commits;
     private final BotConfigurationInfo config;
     
     private Map<DateTime, String> results;
@@ -31,7 +29,6 @@ public class JiraChangelogFormatter{
     public  JiraChangelogFormatter(Issue issue, BotConfigurationInfo config)
     {
         this.logs = issue.Changelog;
-        this.commits = issue.Commits;
         this.config = config;
     }
     
@@ -52,24 +49,7 @@ public class JiraChangelogFormatter{
                         }
                     });
         }
-        
-        if(commits != null && commits.size() > 0)
-        {
-            //builder.append(":newspaper: ");
-            commits.forEach(commit -> {
-                        results.put(new DateTime(commit.CreatedOn),
-                                String.format("%s %s-<%s> [%s]-<%s|%s> %s \n", 
-                                "master".equals(commit.Branch) ? ":github_green:" : ":github_grey:",
-                                new DateTime(commit.CreatedOn).toString("MM/dd HH:mm"),
-                                commit.Author,
-                                commit.Branch.length() > 9 ? commit.Branch.substring(0, 9) : commit.Branch,
-                                commit.Url.replace("api.", "").replace("/repos", "").replace("commits", "commit"),
-                                commit.Id.isEmpty() ? "empty" : commit.Id.substring(0, 4),
-                                commit.Message.length() > 60 ?  commit.Message.substring(0, 60) + " ..." : commit.Message
-                        ));
-            });
-        }
-        
+       
         
         StringBuilder builder = new StringBuilder();
         

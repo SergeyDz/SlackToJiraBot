@@ -7,8 +7,6 @@ package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
 import java.util.ArrayList;
 import java.util.List;
-import sd.samples.akka.slacktojirabot.POCO.Github.Commit;
-import sd.samples.akka.slacktojirabot.POCO.Github.PullRequest;
 
 /**
  *
@@ -19,8 +17,6 @@ public class Issue {
     public Issue()
     {
         this.Changelog = new ArrayList<>();
-        this.Commits = new ArrayList<>();
-        this.PullRequests = new ArrayList<>();
     }
     
     public String Status; 
@@ -38,10 +34,6 @@ public class Issue {
     public Double StoryPoints;
     
     public List<JiraChangelogItem> Changelog;
-    
-    public List<Commit> Commits;
-    
+
     public List<String> Flagged;
-    
-    public List<PullRequest> PullRequests;
 }

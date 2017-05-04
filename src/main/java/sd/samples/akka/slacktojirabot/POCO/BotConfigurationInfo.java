@@ -39,12 +39,10 @@ public class BotConfigurationInfo {
                 }
             }
         }
-        
-       
+
         this.SlackAuthorizationKey = propertiesMap.containsKey("slack-key") ? propertiesMap.get("slack-key").trim() : System.getenv("slackkey");
         this.JiraUser = propertiesMap.containsKey("jira-user") ? propertiesMap.get("jira-user").trim() : System.getenv("jirauser");
         this.JiraPassword = propertiesMap.containsKey("jira-password") ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
-        this.GitHubToken = propertiesMap.containsKey("github-key") ? propertiesMap.get("github-key").trim() : System.getenv("githubkey");
         String channels = propertiesMap.containsKey("slack-channels") ? propertiesMap.get("slack-channels").trim() : System.getenv("slackchannels");
         
         if(channels == null)
@@ -65,13 +63,11 @@ public class BotConfigurationInfo {
     
     public String JiraPassword;
     
-    public String JiraBaseUrl = "https://intapp.atlassian.net";
+    public String JiraBaseUrl = "http://jira:8080";
     
     public int ChangelogDays = 1;
     
     public boolean HasUseSlackAttachment = true;
-    
-    public String GitHubToken;
 
     public List<String> Channels;
 }

@@ -43,11 +43,10 @@ public class JiraIssuesToAttachmentFormatter implements Callable<SendAttachment>
             
             attachment.Message = "\n";
             attachment.Message += JiraFormatter.GetFlags(issue);
-            attachment.Message += String.format("%s %s %s %s - <%s|%s> - %s %s", 
+            attachment.Message += String.format("%s %s %s - <%s|%s> - %s %s", 
                 JiraFormatter.GetStatusEmoji(issue.Status),
                 JiraFormatter.GetUserPic(issue.Assignee),
                 JiraFormatter.GetIssueType(issue.IssueType),
-                JiraFormatter.GetPullRequests(issue),
                 issue.Url, 
                 issue.Key, 
                 issue.Summary,
