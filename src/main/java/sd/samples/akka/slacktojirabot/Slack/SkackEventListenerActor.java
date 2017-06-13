@@ -28,9 +28,9 @@ import sd.samples.akka.slacktojirabot.POCO.Slack.SlackConnectionInfo;
  */
 public class SkackEventListenerActor extends UntypedActor {
 
-    private final BotConfigurationInfo config;
-    private final String channel;
-    private final RoundRobinPool pool = new RoundRobinPool(8);
+    protected final BotConfigurationInfo config;
+    protected final String channel;
+    protected final RoundRobinPool pool = new RoundRobinPool(8);
     
     private SlackSession session;
     
@@ -50,15 +50,15 @@ public class SkackEventListenerActor extends UntypedActor {
             SlackChannel theChannel = session.findChannelByName(this.channel);
             SlackConnectionInfo connection = new SlackConnectionInfo(session, theChannel);
             
-            ActorRef channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, connection, this.config));
-            channelSenderActor.tell(new SendMessage(String.format("Connected %s. (DevOps Team support added !)", this.channel)), null);
+            ActorRef channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, connection, this.config), "ChannelSenderActor-" + this.channel);
+            channelSenderActor.tell(new SendMessage(String.format("Connected %s.", this.channel)), null);
 
             registeringAListener(connection, channelSenderActor);
             System.out.println("Connection success");
         } 
     }
     
-    public void registeringAListener(SlackConnectionInfo connection, ActorRef senderActor) 
+    protected void registeringAListener(SlackConnectionInfo connection, ActorRef senderActor) 
     {
         // first define the listener
         SlackMessagePostedListener messagePostedListener = (SlackMessagePosted event, SlackSession s) -> {

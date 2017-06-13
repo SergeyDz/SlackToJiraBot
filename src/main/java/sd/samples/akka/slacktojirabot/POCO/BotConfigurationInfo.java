@@ -68,6 +68,8 @@ public class BotConfigurationInfo {
     public int ChangelogDays = 1;
     
     public boolean HasUseSlackAttachment = true;
+    
+    public String BotName = "JiraBot";
 
     public List<String> Channels;
 }
