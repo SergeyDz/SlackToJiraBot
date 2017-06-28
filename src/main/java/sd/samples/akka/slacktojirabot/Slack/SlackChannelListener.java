@@ -11,7 +11,7 @@ import akka.actor.Props;
 import akka.routing.RoundRobinPool;
 import java.util.concurrent.Callable;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
-import sd.samples.akka.slacktojirabot.artifactory.ArtifactoryEventListenerActor;
+import sd.samples.akka.slacktojirabot.Artifactory.ArtifactoryEventListenerActor;
 
 /**
  *
@@ -35,11 +35,11 @@ public class SlackChannelListener implements Callable<ActorRef> {
         System.out.println("Creting Actor for channel " + this.channel);
         if(channel.contains("artifactory"))
         {
-            return system.actorOf(new RoundRobinPool(4).props(Props.create(SkackEventListenerActor.class, config, this.channel)));
+            return system.actorOf(Props.create(ArtifactoryEventListenerActor.class, config, this.channel));
         }
         else
         {
-            return system.actorOf(Props.create(ArtifactoryEventListenerActor.class, config, this.channel));
+            return system.actorOf(new RoundRobinPool(4).props(Props.create(SkackEventListenerActor.class, config, this.channel)));
         }
     }
     
