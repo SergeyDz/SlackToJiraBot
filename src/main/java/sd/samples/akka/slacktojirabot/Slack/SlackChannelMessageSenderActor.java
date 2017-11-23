@@ -31,7 +31,7 @@ public class SlackChannelMessageSenderActor extends UntypedActor {
         this.config = config;
         this.channel = connection.Channel;
         this.slackConfig = SlackChatConfiguration.getConfiguration();
-        slackConfig.withName("Jirabot");
+        slackConfig.withName("sauron");
     }
 
     @Override

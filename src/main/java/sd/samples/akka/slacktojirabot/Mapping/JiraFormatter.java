@@ -37,6 +37,9 @@ public class JiraFormatter {
             case "10000": 
                 result = "In Dev";
                 break;
+            case "10001": 
+                result = "In Testing";
+                break;
             case "10002": 
                 result = "New";
                 break;

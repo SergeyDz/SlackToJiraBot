@@ -9,6 +9,7 @@ import akka.actor.ActorRef;
 import akka.actor.ActorSelection;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
+import org.joda.time.DateTime;
 import sd.samples.akka.slacktojirabot.Mapping.Attachment.JiraIssuesToAttachmentFormatter;
 import sd.samples.akka.slacktojirabot.Mapping.Message.JiraIssuesResultFormatter;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterResult;
@@ -30,12 +31,14 @@ public class JiraActor extends UntypedActor {
     private final ActorRef senderActor;
     private final BotConfigurationInfo config;
     private final SlackUserRequest slackRequest;
+    private final DateTime ShowItemsModifiedOn;
     
-    public JiraActor(SlackUserRequest request, ActorRef senderActor, BotConfigurationInfo config)
+    public JiraActor(SlackUserRequest request, ActorRef senderActor, DateTime showItemsModifiedOn, BotConfigurationInfo config)
     {
         this.senderActor = senderActor;
         this.config = config;
         this.slackRequest = request;
+        this.ShowItemsModifiedOn = showItemsModifiedOn;
     }
     
     @Override
@@ -50,13 +53,17 @@ public class JiraActor extends UntypedActor {
         else if(message instanceof JiraSprintResult)
         {
             JiraSprintResult jiraSprintResult = (JiraSprintResult)message;
-            ActorRef jiraFilterActor = context().actorOf(Props.create(JiraFilterActor.class, this.slackRequest.HasShowChangeLog, this.config));
+            ActorRef jiraFilterActor = context().actorOf(Props.create(JiraFilterActor.class, this.slackRequest.HasShowChangeLog, this.ShowItemsModifiedOn, this.config));
             jiraFilterActor.tell(jiraSprintResult, self());
         }
         else if(message instanceof JiraFilterResult)
         {
             JiraFilterResult result = (JiraFilterResult)message;
-            senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(result.Issues, config).call()), self());
+            
+            if(result.Issues != null && !result.Issues.isEmpty())
+            {
+                senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(result.Issues, this.ShowItemsModifiedOn, config).call()), self());
+            }
         }
         else if(message instanceof NotFoundMessage)
         {

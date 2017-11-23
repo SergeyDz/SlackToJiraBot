@@ -21,6 +21,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
+import org.joda.time.DateTime;
 import sd.samples.akka.slacktojirabot.Mapping.JiraIssueMapper;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraFilterResult;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
@@ -34,11 +35,13 @@ public class JiraFilterActor extends UntypedActor {
 
     private final BotConfigurationInfo config;
     private final boolean hasShowChangeLog;
+    private final DateTime ShowItemsModifiedOn;
     
-    public JiraFilterActor(boolean hasShowChangeLog, BotConfigurationInfo config)
+    public JiraFilterActor(boolean hasShowChangeLog, DateTime showItemsModifiedOn, BotConfigurationInfo config)
     {
         this.config = config;
         this.hasShowChangeLog = hasShowChangeLog;
+        this.ShowItemsModifiedOn = showItemsModifiedOn;
     }
     
     @Override
@@ -77,6 +80,21 @@ public class JiraFilterActor extends UntypedActor {
                                     public void onSuccess(Iterable<Issue> success) throws Throwable {
                                         List<Issue> issues = StreamSupport.stream(success.spliterator(), false)
                                                 .collect(Collectors.toList());
+                                        
+                                        if(ShowItemsModifiedOn != null)
+                                        {
+                                            issues
+                                                    .forEach(a -> a.Changelog = a.Changelog
+                                                                                        .stream()
+                                                                                        .filter(b -> b.Created.isAfter(ShowItemsModifiedOn))
+                                                                                        .collect(Collectors.toList()));
+
+                                            issues = issues
+                                                    .stream()
+                                                    .filter(a -> !a.Changelog.isEmpty())
+                                                    .collect(Collectors.toList());
+                                        }
+                                        
                                         sender.tell(new JiraFilterResult(issues), null);
                                         //gitActor.tell(new LinkPullRequests(new JiraIssuesContainer(issues), ((JiraSprintsResult) message).HasShowChangeLog), self());
                                         

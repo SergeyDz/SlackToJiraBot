@@ -85,18 +85,20 @@ public class JiraChangelogFormatter{
         {
             case "status": 
                 result = String.format("%s:arrow:%s", 
-                        JiraFormatter.GetStatusEmoji(JiraFormatter.GetStatusTextById(from)),
+                         JiraFormatter.GetStatusEmoji(JiraFormatter.GetStatusTextById(from)),
                         JiraFormatter.GetStatusEmoji(JiraFormatter.GetStatusTextById(to)));
                 break;
                 
             case "assignee": 
-                result = String.format("%s:arrow:%s", 
-                        JiraFormatter.GetUserPic(from),
+                result = String.format(":arrow:%s", 
                         JiraFormatter.GetUserPic(to));
                 break;
                 
             case "resolution":                
             case "Rank":
+                break;
+                
+             case "WorklogId":
                 break;
                 
             case "Flagged":

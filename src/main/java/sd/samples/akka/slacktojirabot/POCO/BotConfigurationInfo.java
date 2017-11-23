@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.apache.commons.codec.binary.Base64;
 
 /**
  *
@@ -43,6 +44,12 @@ public class BotConfigurationInfo {
         this.SlackAuthorizationKey = propertiesMap.containsKey("slack-key") ? propertiesMap.get("slack-key").trim() : System.getenv("slackkey");
         this.JiraUser = propertiesMap.containsKey("jira-user") ? propertiesMap.get("jira-user").trim() : System.getenv("jirauser");
         this.JiraPassword = propertiesMap.containsKey("jira-password") ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
+        this.JiraPassword = propertiesMap.containsKey("jira-password") ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
+        this.JiraObserveInterval = propertiesMap.containsKey("jiraobserveinterval") ? propertiesMap.get("jiraobserveinterval").trim() : System.getenv("jiraobserveinterval");
+        
+        this.JiraUser = new String(Base64.decodeBase64(this.JiraUser));
+        this.JiraPassword = new String(Base64.decodeBase64(this.JiraPassword));
+        
         String channels = propertiesMap.containsKey("slack-channels") ? propertiesMap.get("slack-channels").trim() : System.getenv("slackchannels");
         
         if(channels == null)
@@ -55,6 +62,8 @@ public class BotConfigurationInfo {
                 .stream().map(x -> x.trim())
                 .collect(Collectors.toList());
         
+        this.WatchSprintChangesTimeout = Integer.parseInt(this.JiraObserveInterval);
+        
     }
     
     public String SlackAuthorizationKey; 
@@ -62,6 +71,8 @@ public class BotConfigurationInfo {
     public String JiraUser;
     
     public String JiraPassword;
+    
+    public String JiraObserveInterval;
     
     public String JiraBaseUrl = "https://jira.sbtech.com";
     
@@ -74,4 +85,6 @@ public class BotConfigurationInfo {
     public List<String> Channels;
     
     public List<String> Boards = Arrays.asList("519", "514");
+    
+    public int WatchSprintChangesTimeout = 1;
 }

@@ -6,6 +6,7 @@
 package sd.samples.akka.slacktojirabot.Slack;
 
 import akka.actor.ActorRef;
+import akka.actor.Cancellable;
 import akka.actor.Props;
 import akka.actor.UntypedActor;
 import akka.routing.RoundRobinPool;
@@ -16,7 +17,12 @@ import com.ullink.slack.simpleslackapi.events.SlackMessagePosted;
 import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
 import com.ullink.slack.simpleslackapi.listeners.SlackMessagePostedListener;
 import java.io.IOException;
+import static java.time.Clock.system;
+import java.util.concurrent.TimeUnit;
+import org.joda.time.DateTime;
+import scala.concurrent.duration.Duration;
 import sd.samples.akka.slacktojirabot.Jira.JiraActor;
+import sd.samples.akka.slacktojirabot.Jira.JiraSchedullerActor;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.JiraRequest;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
@@ -55,6 +61,12 @@ public class SkackEventListenerActor extends UntypedActor {
 
             registeringAListener(connection, channelSenderActor);
             System.out.println("Connection success");
+            
+            String team = new WhereAmILocator("bot status", connection.Channel.getName()).call();
+            JiraRequest request = new JiraRequest(team, true);
+            ActorRef jiraSchedullerActor = context().actorOf(pool.props(Props.create(JiraSchedullerActor.class, request, channelSenderActor, this.config)));
+            Cancellable cancellable = context().system().scheduler().schedule(Duration.Zero(),
+            Duration.create(this.config.WatchSprintChangesTimeout, TimeUnit.MINUTES), jiraSchedullerActor, request, context().system().dispatcher(), null);
         } 
     }
     
@@ -91,7 +103,7 @@ public class SkackEventListenerActor extends UntypedActor {
                     senderActor.tell(new SendMessage("Team found - " + team + ". Please wait for private response.:clock9:"), null);
                     JiraRequest request = new JiraRequest(team, hasShowChangeLog);
                     ActorRef privateMessageSender = context().actorOf(pool.props(Props.create(SlackUserMessageSenderActor.class, connection, this.config, sender)));
-                    ActorRef jiraActor = context().actorOf(pool.props(Props.create(JiraActor.class, request, privateMessageSender, this.config)));
+                    ActorRef jiraActor = context().actorOf(pool.props(Props.create(JiraActor.class, request, privateMessageSender, new DateTime().minusHours(4), this.config)));
                     jiraActor.tell(request, null);
                 }
             } 

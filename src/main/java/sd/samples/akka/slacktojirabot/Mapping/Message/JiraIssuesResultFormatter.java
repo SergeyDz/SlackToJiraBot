@@ -7,6 +7,7 @@ package sd.samples.akka.slacktojirabot.Mapping.Message;
 
 import java.util.List;
 import java.util.concurrent.Callable;
+import org.joda.time.DateTime;
 import sd.samples.akka.slacktojirabot.Mapping.JiraFormatter;
 import sd.samples.akka.slacktojirabot.Mapping.JiraStatisticsFormatter;
 import sd.samples.akka.slacktojirabot.POCO.BotConfigurationInfo;
@@ -20,18 +21,23 @@ public class JiraIssuesResultFormatter implements Callable<String> {
 
     private final List<Issue> issues;
     private final BotConfigurationInfo config;
+    private final DateTime ShowItemsModifiedOn;
     
-    public  JiraIssuesResultFormatter(List<Issue> issues, BotConfigurationInfo config)
+    public  JiraIssuesResultFormatter(List<Issue> issues, DateTime showItemsModifiedOn, BotConfigurationInfo config)
     {
         this.issues = issues;
         this.config = config;
+        this.ShowItemsModifiedOn = showItemsModifiedOn;
     }
     
     @Override
     public String call() throws Exception {
         StringBuilder builder = new StringBuilder();
         
-        builder.append(new JiraStatisticsFormatter(this.issues).call());
+        if(this.ShowItemsModifiedOn == null)
+        {
+            builder.append(new JiraStatisticsFormatter(this.issues).call());
+        }
         
         issues.forEach((issue) -> {
             String line = String.format("\n%s %s %s - <%s|%s> - *%s* %s", 

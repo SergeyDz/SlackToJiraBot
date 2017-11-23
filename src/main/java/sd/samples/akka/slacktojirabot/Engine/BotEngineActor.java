@@ -32,6 +32,7 @@ public class BotEngineActor extends UntypedActor {
             
             BotConfigurationInfo config = ((EngineConfiguration) message).GetBotConfiguration();
             ActorSystem system = context().system();
+            
             ActorRef jiraAgileActor = context().actorOf(Props.create(JiraSprintActor.class, config), "JiraAgileActor");
                
             List<Future<ActorRef>> actors = config.Channels.stream()
