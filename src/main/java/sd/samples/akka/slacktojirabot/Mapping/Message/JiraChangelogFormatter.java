@@ -11,7 +11,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-import javafx.print.Collation;
 import org.joda.time.DateTime;
 import sd.samples.akka.slacktojirabot.Mapping.JiraFormatter;
 import sd.samples.akka.slacktojirabot.POCO.Atlassian.Issue;
