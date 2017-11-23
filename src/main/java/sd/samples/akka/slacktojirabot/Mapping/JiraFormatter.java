@@ -15,7 +15,7 @@ public class JiraFormatter {
     // Todo: make dynamic loinking with dictionary from Jira.
     public static String GetStatusTextById(String status)
     {
-        String result = "";
+        String result = status;
                
         switch(status)
         {
@@ -31,8 +31,17 @@ public class JiraFormatter {
             case "6": 
                 result = "Closed";
                 break;
-             case "4": 
+            case "4": 
                 result = "Reopened";
+                break;
+            case "10000": 
+                result = "In Dev";
+                break;
+            case "10002": 
+                result = "New";
+                break;
+            case "10004": 
+                result = "Ready For Testing";
                 break;
         }
         
@@ -41,31 +50,7 @@ public class JiraFormatter {
     
     public static String GetStatusEmoji(String status)
     {
-        String result = "";
-        
-        switch(status)
-        {
-            case "Open": 
-                result = ":open:";
-                break;
-            case "In Progress": 
-                result = ":inprogress:";
-                break;
-            case "Resolved": 
-                result = ":resolved:";
-                break;
-            case "Closed": 
-                result = ":closed:";
-                break;
-            case "Reopened": 
-                result = ":reopened:";
-                break;
-            default:
-                 result = ":grey_question:";
-                 break;
-        }
-        
-        return result;
+        return "`" + status + "`";
     }
     
     public static String GetIssueType(String type)
@@ -93,9 +78,10 @@ public class JiraFormatter {
                 result = ":jira_epic:";
                 break;
             case "Sub-task": 
+            case "Dev Sub-Task": 
                 result = ":sub-task:";
                 break;
-            case "Sub-bug": 
+            case "Sub-Bug": 
                 result = ":sub-bug:";
                 break;
             default: 

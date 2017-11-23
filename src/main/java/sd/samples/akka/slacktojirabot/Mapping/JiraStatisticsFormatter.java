@@ -60,7 +60,7 @@ public class JiraStatisticsFormatter implements Callable<String>{
                 .sorted(Comparator.comparingDouble(JiraStatisticsItem::getStoryPoints).reversed())
                 .collect(Collectors.toList())
                 .forEach(item -> {
-                     builder.append(String.format("%s: %s _(%1.0f%% - %1.1fsp)_, ", item.Key, item.Count, item.Persentage, item.StoryPoints));
+                     builder.append(String.format("%s: %s _(%1.0f%%)_, ", item.Key, item.Count, item.Persentage));
                 });
 
         String result =  builder.toString();
@@ -84,7 +84,7 @@ public class JiraStatisticsFormatter implements Callable<String>{
                 .sorted(Comparator.comparingDouble(JiraStatisticsItem::getStoryPoints).reversed())
                 .collect(Collectors.toList())
                 .forEach(item -> {
-                     builder.append(String.format("%s: %s _(%1.0f%% - %1.1fsp)_, ", item.Key, item.Count, item.Persentage, item.StoryPoints));
+                     builder.append(String.format("%s: %s _(%1.0f%%)_, ", item.Key, item.Count, item.Persentage));
                 });
 
         String result =  builder.toString();
@@ -107,7 +107,7 @@ public class JiraStatisticsFormatter implements Callable<String>{
                 .sorted(Comparator.comparingDouble(JiraStatisticsItem::getStoryPoints).reversed())
                 .collect(Collectors.toList())
                 .forEach(item -> {
-                     builder.append(String.format("%s: %s _(%1.0f%% - %1.1fsp)_, ", item.Key, item.Count, item.Persentage, item.StoryPoints));
+                     builder.append(String.format("%s: %s _(%1.0f%%)_, ", item.Key, item.Count, item.Persentage));
                 });
 
         String result =  builder.toString();

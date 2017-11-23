@@ -34,7 +34,7 @@ public class JiraIssuesResultFormatter implements Callable<String> {
         builder.append(new JiraStatisticsFormatter(this.issues).call());
         
         issues.forEach((issue) -> {
-            String line = String.format("\n%s %s %s - <%s|%s> - %s %s", 
+            String line = String.format("\n%s %s %s - <%s|%s> - *%s* %s", 
                 JiraFormatter.GetStatusEmoji(issue.Status),
                 JiraFormatter.GetUserPic(issue.Assignee),
                 JiraFormatter.GetIssueType(issue.IssueType),

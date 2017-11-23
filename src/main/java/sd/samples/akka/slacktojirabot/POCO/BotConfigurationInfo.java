@@ -63,7 +63,7 @@ public class BotConfigurationInfo {
     
     public String JiraPassword;
     
-    public String JiraBaseUrl = "http://jira:8080";
+    public String JiraBaseUrl = "https://jira.sbtech.com";
     
     public int ChangelogDays = 1;
     
@@ -72,4 +72,6 @@ public class BotConfigurationInfo {
     public String BotName = "JiraBot";
 
     public List<String> Channels;
+    
+    public List<String> Boards = Arrays.asList("519", "514");
 }

@@ -44,7 +44,7 @@ public class JiraActor extends UntypedActor {
         if(message instanceof JiraRequest)
         {
             JiraRequest request = (JiraRequest)message;
-            ActorSelection sprintActor = context().actorSelection("akka://bot-system/user/JiraAgileActor");
+            ActorSelection sprintActor = context().actorSelection("akka://bot-system/user/BotEngineActor/JiraAgileActor");
             sprintActor.tell(new JiraSprintRequest(slackRequest.TeamName), self());
         }
         else if(message instanceof JiraSprintResult)

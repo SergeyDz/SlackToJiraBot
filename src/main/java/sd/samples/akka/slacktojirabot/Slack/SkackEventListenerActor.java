@@ -68,22 +68,22 @@ public class SkackEventListenerActor extends UntypedActor {
             String messageContent = event.getMessageContent().toLowerCase();
             SlackUser sender = event.getSender();
             
-            if(messageContent.equals("jirabot"))
+            if(messageContent.equals("bot"))
             {
                 String commands = String.format("Commands: \n%s \n%s \n%s \n%s", 
-                        "_jirabot_", 
-                        "_jirabot *team*_",
-                        "_jirabot status_",
-                        "_jirabot *team*_ status");
+                        "_bot_", 
+                        "_bot *team*_",
+                        "_bot status_",
+                        "_bot *team*_ status");
                 senderActor.tell(new SendMessage(commands), null);
             }
-            else if(messageContent.startsWith("jirabot"))
+            else if(messageContent.startsWith("bot"))
             {
                 String team = new WhereAmILocator(messageContent, connection.Channel.getName()).call();
 
                 if(team.isEmpty())
                 {
-                     senderActor.tell(new SendMessage("Sorry, but I can't find your team name. Please try _jirabot sprint jets_."), null);
+                     senderActor.tell(new SendMessage("Sorry, but I can't find your team name. Please try _bot sprint devops_."), null);
                 }
                 else
                 {
@@ -95,7 +95,7 @@ public class SkackEventListenerActor extends UntypedActor {
                     jiraActor.tell(request, null);
                 }
             } 
-            else if(messageContent.startsWith("jirabot"))
+            else if(messageContent.startsWith("bot"))
             {
                 senderActor.tell(new SendMessage("Hi, I don't understand. :scream:"), null);
             }

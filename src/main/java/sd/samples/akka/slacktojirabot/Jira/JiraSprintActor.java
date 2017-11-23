@@ -43,12 +43,13 @@ public class JiraSprintActor extends UntypedActor {
     
     private final ObjectMapper objectMapper;
     
-    private List<String> boards = Arrays.asList("430");
+    private final List<String> boards;
     
     public JiraSprintActor(BotConfigurationInfo config)
     {
         this.config = config;
         this.objectMapper = new ObjectMapper();
+        this.boards = this.config.Boards;
     }
      
     @Override
@@ -85,9 +86,10 @@ public class JiraSprintActor extends UntypedActor {
         }
     }
 
-    private void processCallback(List<CompletableFuture<List<JiraSprint>>> futures, JiraSprintRequest sprint, ActorRef sender) {
+   private void processCallback(List<CompletableFuture<List<JiraSprint>>> futures, JiraSprintRequest sprint, ActorRef sender) {
         all(futures).thenAccept(list -> {
             Optional<JiraSprint> r = list.stream()
+                    .filter(c -> (StringUtils.containsIgnoreCase(c.name, sprint.TeamName)))
                     .findFirst();
             
             if(r.isPresent())

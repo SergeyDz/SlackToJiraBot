@@ -26,7 +26,7 @@ public class WhereAmILocator {
         String removeReqularWords = this.message
                 .replace("sprint", "")
                 .replace("status", "")
-                .replace("jirabot", "")
+                .replace("bot", "")
                 .trim();
         
         if(removeReqularWords.isEmpty())
