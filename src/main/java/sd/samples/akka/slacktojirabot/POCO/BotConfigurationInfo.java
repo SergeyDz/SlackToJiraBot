@@ -44,11 +44,15 @@ public class BotConfigurationInfo {
         this.SlackAuthorizationKey = propertiesMap.containsKey("slack-key") ? propertiesMap.get("slack-key").trim() : System.getenv("slackkey");
         this.JiraUser = propertiesMap.containsKey("jira-user") ? propertiesMap.get("jira-user").trim() : System.getenv("jirauser");
         this.JiraPassword = propertiesMap.containsKey("jira-password") ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
-        this.JiraPassword = propertiesMap.containsKey("jira-password") ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
+       
         this.JiraObserveInterval = propertiesMap.containsKey("jiraobserveinterval") ? propertiesMap.get("jiraobserveinterval").trim() : System.getenv("jiraobserveinterval");
         
         this.JiraUser = new String(Base64.decodeBase64(this.JiraUser));
         this.JiraPassword = new String(Base64.decodeBase64(this.JiraPassword));
+        
+        this.AFUser = propertiesMap.containsKey("af-user") ? propertiesMap.get("af-user").trim() : System.getenv("afuser");
+        this.AFPassword = propertiesMap.containsKey("af-password") ? propertiesMap.get("af-password").trim() : System.getenv("afpassword");
+        
         
         String channels = propertiesMap.containsKey("slack-channels") ? propertiesMap.get("slack-channels").trim() : System.getenv("slackchannels");
         
@@ -72,6 +76,10 @@ public class BotConfigurationInfo {
     
     public String JiraPassword;
     
+    public String AFUser;
+    
+    public String AFPassword;
+    
     public String JiraObserveInterval;
     
     public String JiraBaseUrl = "https://jira.sbtech.com";
@@ -86,5 +94,5 @@ public class BotConfigurationInfo {
     
     public List<String> Boards = Arrays.asList("519", "514");
     
-    public int WatchSprintChangesTimeout = 1;
+    public int WatchSprintChangesTimeout = 10;
 }

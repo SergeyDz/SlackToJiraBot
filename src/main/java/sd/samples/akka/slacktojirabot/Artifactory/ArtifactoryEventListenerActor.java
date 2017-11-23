@@ -29,7 +29,7 @@ public class ArtifactoryEventListenerActor extends akka.actor.UntypedActor
     protected final String channel;
     private SlackSession session;
     private String localPath = "./files/";
-     ActorRef channelSenderActor = null;
+    ActorRef channelSenderActor = null;
     
     public ArtifactoryEventListenerActor(BotConfigurationInfo config, String channel) throws IOException {
         

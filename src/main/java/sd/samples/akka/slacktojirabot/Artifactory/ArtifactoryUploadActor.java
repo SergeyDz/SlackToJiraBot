@@ -30,21 +30,23 @@ import sd.samples.akka.slacktojirabot.POCO.Slack.SendMessage;
  * @author sergey.d
  */
 public class ArtifactoryUploadActor extends UntypedActor{
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+    DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     
     private final String localPath = "./";
     private final String artifactoryBaseUrl = "http://artifactory.sbtech.com:8081/artifactory";
     private final String artifactoryFeatureRepository = "SBTechFeature";
     private final String artifactoryReleaseRepository = "SBTech";
     
-    private final String afUser = "slack";
-    private final String afPassword = "'?.%%l$PUdft,1y";
+    private String afUser = "none";
+    private String afPassword = "none";
     
     protected final BotConfigurationInfo config;
     
     public ArtifactoryUploadActor(BotConfigurationInfo config)
     {
         this.config = config;
+        this.afUser = config.AFUser;
+        this.afPassword = config.AFPassword;
     }
     
     @Override
