@@ -64,6 +64,10 @@ public class JiraActor extends UntypedActor {
             {
                 senderActor.tell(new SendMessage(new JiraIssuesResultFormatter(result.Issues, this.ShowItemsModifiedOn, config).call()), self());
             }
+            else if(this.ShowItemsModifiedOn == null)
+            {
+                senderActor.tell(new SendMessage("Hobbits not found"), self());
+            }
         }
         else if(message instanceof NotFoundMessage)
         {

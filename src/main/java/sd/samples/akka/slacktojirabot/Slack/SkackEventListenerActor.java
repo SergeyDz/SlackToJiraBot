@@ -103,7 +103,7 @@ public class SkackEventListenerActor extends UntypedActor {
                     senderActor.tell(new SendMessage("Team found - " + team + ". Please wait for private response.:clock9:"), null);
                     JiraRequest request = new JiraRequest(team, hasShowChangeLog);
                     ActorRef privateMessageSender = context().actorOf(pool.props(Props.create(SlackUserMessageSenderActor.class, connection, this.config, sender)));
-                    ActorRef jiraActor = context().actorOf(pool.props(Props.create(JiraActor.class, request, privateMessageSender, new DateTime().minusHours(4), this.config)));
+                    ActorRef jiraActor = context().actorOf(pool.props(Props.create(JiraActor.class, request, privateMessageSender, null, this.config)));
                     jiraActor.tell(request, null);
                 }
             } 

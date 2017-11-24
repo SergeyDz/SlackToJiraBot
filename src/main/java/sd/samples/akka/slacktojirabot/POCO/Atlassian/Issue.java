@@ -6,7 +6,9 @@
 package sd.samples.akka.slacktojirabot.POCO.Atlassian;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import org.joda.time.DateTime;
 
 /**
  *
@@ -36,4 +38,8 @@ public class Issue {
     public List<JiraChangelogItem> Changelog;
 
     public List<String> Flagged;
+    
+    public DateTime ModifiedOn; 
+    
+    public DateTime CreatedOn; 
 }

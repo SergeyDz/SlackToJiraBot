@@ -41,6 +41,8 @@ public class JiraIssueMapper extends Mapper<com.atlassian.jira.rest.client.api.d
             result.Summary = source.getSummary();
             result.StoryPoints = getStoryPoints(source);
             result.Flagged = getFlagged(source);
+            result.ModifiedOn = source.getUpdateDate();
+            result.CreatedOn = source.getCreationDate();          
             
             result.Url = config.JiraBaseUrl + "/browse/" + result.Key;
             

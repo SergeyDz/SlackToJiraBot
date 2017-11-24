@@ -44,6 +44,9 @@ public class BotConfigurationInfo {
         this.SlackAuthorizationKey = propertiesMap.containsKey("slack-key") ? propertiesMap.get("slack-key").trim() : System.getenv("slackkey");
         this.JiraUser = propertiesMap.containsKey("jira-user") ? propertiesMap.get("jira-user").trim() : System.getenv("jirauser");
         this.JiraPassword = propertiesMap.containsKey("jira-password") ? propertiesMap.get("jira-password").trim() : System.getenv("jirapassword");
+        
+        String jiraBoards = propertiesMap.containsKey("jira-boards") ? propertiesMap.get("jira-boards").trim() : System.getenv("jiraboards");
+        this.Boards =  Arrays.asList(jiraBoards.split(","));
        
         this.JiraObserveInterval = propertiesMap.containsKey("jiraobserveinterval") ? propertiesMap.get("jiraobserveinterval").trim() : System.getenv("jiraobserveinterval");
         
@@ -92,7 +95,7 @@ public class BotConfigurationInfo {
 
     public List<String> Channels;
     
-    public List<String> Boards = Arrays.asList("519", "514");
+    public List<String> Boards;
     
     public int WatchSprintChangesTimeout = 10;
 }

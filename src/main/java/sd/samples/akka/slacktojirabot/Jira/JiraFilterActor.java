@@ -91,9 +91,14 @@ public class JiraFilterActor extends UntypedActor {
 
                                             issues = issues
                                                     .stream()
-                                                    .filter(a -> !a.Changelog.isEmpty())
+                                                    .filter(a -> !a.Changelog.isEmpty() 
+                                                                   || (a.ModifiedOn != null && a.ModifiedOn.isAfter(ShowItemsModifiedOn))
+                                                                   || a.CreatedOn.isAfter(ShowItemsModifiedOn))
                                                     .collect(Collectors.toList());
                                         }
+                                        
+                                        // skipping all closed and not changed
+                                        issues = issues.stream().filter(a -> !a.Changelog.isEmpty() || !a.Status.equalsIgnoreCase("Closed")).collect(Collectors.toList());
                                         
                                         sender.tell(new JiraFilterResult(issues), null);
                                         //gitActor.tell(new LinkPullRequests(new JiraIssuesContainer(issues), ((JiraSprintsResult) message).HasShowChangeLog), self());
