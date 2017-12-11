@@ -30,6 +30,7 @@ import org.apache.http.protocol.BasicHttpContext;
 import org.apache.http.protocol.HttpContext;
 import sd.bot.akka.slacktojirabot.POCO.Atlassian.JiraSprintResult;
 import sd.bot.akka.slacktojirabot.POCO.Atlassian.Rest.JiraSprint;
+import sd.bot.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.bot.akka.slacktojirabot.Slack.NotFoundMessage;
 
 /**
