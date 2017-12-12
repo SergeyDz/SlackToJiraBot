@@ -33,12 +33,15 @@ public class SlackStatusWatchActor extends UntypedActor {
     protected final BotConfigurationInfo config;
     protected final String channel;
     
-    private SlackSession session;
+    protected final SlackConnectionInfo connection;
+    protected final SlackSession session;
     
-    public SlackStatusWatchActor(BotConfigurationInfo config, String channel) throws IOException
+    public SlackStatusWatchActor(BotConfigurationInfo config, String channel, SlackConnectionInfo connection, SlackSession session) throws IOException
     {
         this.config = config;
         this.channel = channel;
+        this.session = session;
+        this.connection = connection;
     }
     
     @Override
@@ -60,13 +63,7 @@ public class SlackStatusWatchActor extends UntypedActor {
             System.out.println("DEPRECATED. Status message will be send !!!");
             
             SendMessage jiraStatusUpdate = (SendMessage)message;
-            session = SlackSessionFactory.createWebSocketSlackSession(this.config.SlackAuthorizationKey);
-            session.connect();
-
-            SlackChannel theChannel = session.findChannelByName(this.channel);
-            SlackConnectionInfo connection = new SlackConnectionInfo(session, theChannel);
-            
-            ActorRef channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, connection, this.config), "ChannelSenderActor-" + this.channel);
+            ActorRef channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, this.connection, this.config), "ChannelSenderActor-" + this.channel);
             channelSenderActor.tell(jiraStatusUpdate, null);
             channelSenderActor.tell(PoisonPill.getInstance(), null);
         }

@@ -8,9 +8,11 @@ package sd.bot.akka.slacktojirabot.Slack.Listeners.Resolvers;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.ullink.slack.simpleslackapi.SlackSession;
 import java.util.concurrent.Callable;
 import sd.bot.akka.slacktojirabot.POCO.BotConfigurationInfo;
 import sd.bot.akka.slacktojirabot.Artifactory.ArtifactoryEventListenerActor;
+import sd.bot.akka.slacktojirabot.POCO.Slack.SlackConnectionInfo;
 import sd.bot.akka.slacktojirabot.Slack.Listeners.SlackEventListenerActor;
 
 /**
@@ -23,11 +25,17 @@ public class SlackChannelListenerResolver implements Callable<ActorRef> {
     private final String channel;
     private final BotConfigurationInfo config;
     
-    public SlackChannelListenerResolver(ActorSystem system, BotConfigurationInfo config, String channel)
+    protected final SlackConnectionInfo connection;
+    protected final SlackSession session;
+    
+    public SlackChannelListenerResolver(ActorSystem system, BotConfigurationInfo config, String channel, SlackConnectionInfo connection, SlackSession session)
     {
         this.channel = channel;
         this.config = config;
         this.system = system;
+        
+        this.session = session;
+        this.connection = connection;
     }
     
     @Override
@@ -35,11 +43,11 @@ public class SlackChannelListenerResolver implements Callable<ActorRef> {
         System.out.println("Creting Actor<SlackChannelListenerResolver> for channel " + this.channel);
         if(channel.contains("artifactory"))
         {
-            return system.actorOf(Props.create(ArtifactoryEventListenerActor.class, config, this.channel));
+            return system.actorOf(Props.create(ArtifactoryEventListenerActor.class, config, this.channel, this.connection, this.session));
         }
         else
         {
-            return system.actorOf(Props.create(SlackEventListenerActor.class, config, this.channel));
+            return system.actorOf(Props.create(SlackEventListenerActor.class, config, this.channel, this.connection, this.session));
         }
     }
     

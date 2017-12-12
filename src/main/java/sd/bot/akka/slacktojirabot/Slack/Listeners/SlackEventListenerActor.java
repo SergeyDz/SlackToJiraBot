@@ -34,14 +34,15 @@ public class SlackEventListenerActor extends UntypedActor {
     protected final BotConfigurationInfo config;
     protected final String channel;
     protected final RoundRobinPool pool = new RoundRobinPool(8);
-    
-    private SlackSession session;
-    SlackConnectionInfo connection = null;
-    
-    public SlackEventListenerActor(BotConfigurationInfo config, String channel) throws IOException
+    protected final SlackConnectionInfo connection;
+    protected final SlackSession session;
+       
+    public SlackEventListenerActor(BotConfigurationInfo config, String channel, SlackConnectionInfo connection, SlackSession session) throws IOException
     {
         this.config = config;
         this.channel = channel;
+        this.session = session;
+        this.connection = connection;
     }
     
     @Override
@@ -50,12 +51,7 @@ public class SlackEventListenerActor extends UntypedActor {
         if(message instanceof String && "start".equals(message))
         {
             System.out.println("SlackEventListenerActor is starting");
-            session = SlackSessionFactory.createWebSocketSlackSession(this.config.SlackAuthorizationKey);
-            session.connect();
-
-            SlackChannel theChannel = session.findChannelByName(this.channel);
-            connection = new SlackConnectionInfo(session, theChannel);
-            
+                       
             ActorRef channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, connection, this.config), "ChannelSenderActor-" + this.channel);
             channelSenderActor.tell(new SendMessage(String.format("Connected %s.", this.channel)), null);
 

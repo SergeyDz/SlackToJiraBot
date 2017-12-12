@@ -12,12 +12,17 @@ import akka.actor.UntypedActor;
 import akka.dispatch.Futures;
 import scala.concurrent.Future;
 import akka.dispatch.OnSuccess;
+import com.ullink.slack.simpleslackapi.SlackChannel;
+import com.ullink.slack.simpleslackapi.SlackSession;
+import com.ullink.slack.simpleslackapi.impl.SlackSessionFactory;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 import sd.bot.akka.slacktojirabot.Jira.JiraSprintActor;
 import sd.bot.akka.slacktojirabot.POCO.BotConfigurationInfo;
+import sd.bot.akka.slacktojirabot.POCO.Slack.SlackConnectionInfo;
 import sd.bot.akka.slacktojirabot.Slack.Listeners.Resolvers.SlackChannelListenerResolver;
 import sd.bot.akka.slacktojirabot.Slack.Listeners.Resolvers.SlackJiraStatusWatchResolver;
 
@@ -37,15 +42,26 @@ public class BotEngineActor extends UntypedActor {
             
             ActorRef jiraAgileActor = context().actorOf(Props.create(JiraSprintActor.class, config), "JiraAgileActor");
                
-            List<Future<ActorRef>> listenerActors = config.Channels.stream()
-                    .map(a -> Futures.future(new SlackChannelListenerResolver(system, config, a), system.dispatcher()))
-                    .collect(Collectors.toList());
+            List<Future<ActorRef>> actors = new ArrayList<>();
+            config.Channels.stream()
+                    .forEach(channelName -> {
+                        try
+                        {
+                            SlackSession session = SlackSessionFactory.createWebSocketSlackSession(config.SlackAuthorizationKey);
+                            session.connect();
+
+                            SlackChannel theChannel = session.findChannelByName(channelName);
+                            SlackConnectionInfo connection = new SlackConnectionInfo(session, theChannel);
+                            
+                            actors.add(Futures.future(new SlackChannelListenerResolver(system, config, channelName, connection, session), system.dispatcher()));
+                            actors.add(Futures.future(new SlackJiraStatusWatchResolver(system, config, channelName, connection, session), system.dispatcher()));
+                        }
+                        catch(Exception ex)
+                        {
+                            System.err.println(ex);
+                        }
+                    });
             
-            List<Future<ActorRef>> monitorActors = config.Channels.stream()
-                    .map(a -> Futures.future(new SlackJiraStatusWatchResolver(system, config, a), system.dispatcher()))
-                    .collect(Collectors.toList());
-            
-            List<Future<ActorRef>> actors = Stream.concat(listenerActors.stream(), monitorActors.stream()).collect(Collectors.toList());
             Future<Iterable<ActorRef>> result = Futures.sequence(actors, system.dispatcher());
 
             result.onSuccess(new OnSuccess<Iterable<ActorRef>>() {

@@ -8,8 +8,10 @@ package sd.bot.akka.slacktojirabot.Slack.Listeners.Resolvers;
 import akka.actor.ActorRef;
 import akka.actor.ActorSystem;
 import akka.actor.Props;
+import com.ullink.slack.simpleslackapi.SlackSession;
 import java.util.concurrent.Callable;
 import sd.bot.akka.slacktojirabot.POCO.BotConfigurationInfo;
+import sd.bot.akka.slacktojirabot.POCO.Slack.SlackConnectionInfo;
 import sd.bot.akka.slacktojirabot.Slack.Listeners.SlackStatusWatchActor;
 
 /**
@@ -22,11 +24,17 @@ public class SlackJiraStatusWatchResolver implements Callable<ActorRef> {
     private final String channel;
     private final BotConfigurationInfo config;
     
-    public SlackJiraStatusWatchResolver(ActorSystem system, BotConfigurationInfo config, String channel)
+    protected final SlackConnectionInfo connection;
+    protected final SlackSession session;
+    
+    public SlackJiraStatusWatchResolver(ActorSystem system, BotConfigurationInfo config, String channel, SlackConnectionInfo connection, SlackSession session)
     {
         this.channel = channel;
         this.config = config;
         this.system = system;
+        
+        this.session = session;
+        this.connection = connection;
     }
     
     @Override
@@ -34,7 +42,7 @@ public class SlackJiraStatusWatchResolver implements Callable<ActorRef> {
         System.out.println("DEPRECATED. Creting Actor<SlackJiraStatusWatchResolver> for channel " + this.channel);
         if(!channel.contains("artifactory"))
         {
-             return system.actorOf(Props.create(SlackStatusWatchActor.class, config, this.channel), "SlackStatusWatchActor-" + this.channel);
+             return system.actorOf(Props.create(SlackStatusWatchActor.class, config, this.channel, this.connection, this.session), "SlackStatusWatchActor-" + this.channel);
         }
         return null;
     }
