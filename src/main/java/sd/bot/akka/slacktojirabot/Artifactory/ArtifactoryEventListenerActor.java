@@ -27,26 +27,23 @@ public class ArtifactoryEventListenerActor extends akka.actor.UntypedActor
 {
     protected final BotConfigurationInfo config;
     protected final String channel;
-    private SlackSession session;
     private String localPath = "./files/";
     ActorRef channelSenderActor = null;
+    protected final SlackConnectionInfo connection;
+    protected final SlackSession session;
     
-    public ArtifactoryEventListenerActor(BotConfigurationInfo config, String channel) throws IOException {
+    public ArtifactoryEventListenerActor(BotConfigurationInfo config, String channel, SlackConnectionInfo connection, SlackSession session) throws IOException {
         
         this.config = config;
         this.channel = channel;
+        this.session = session;
+        this.connection = connection;
     }
     
     @Override
     public void onReceive(Object message) throws Exception , IOException {
         if(message instanceof String && "start".equals(message))
-        {
-            session = SlackSessionFactory.createWebSocketSlackSession(this.config.SlackAuthorizationKey);
-            session.connect();
-
-            SlackChannel theChannel = session.findChannelByName(this.channel);
-            SlackConnectionInfo connection = new SlackConnectionInfo(session, theChannel);
-            
+        {         
             channelSenderActor = context().actorOf(Props.create(SlackChannelMessageSenderActor.class, connection, this.config), "ChannelSenderActor-" + this.channel);
             channelSenderActor.tell(new SendMessage(String.format("Connected %s!", this.channel)), null);
 
