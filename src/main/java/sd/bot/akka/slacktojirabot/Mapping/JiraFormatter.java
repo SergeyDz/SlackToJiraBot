@@ -64,6 +64,9 @@ public class JiraFormatter {
             case "10500": 
                 result = "Analysis";
                 break;
+            case "10300": 
+                result = "Code Review";
+                break;
         }
         
         return result;
