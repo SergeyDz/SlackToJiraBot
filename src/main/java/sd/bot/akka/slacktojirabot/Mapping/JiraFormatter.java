@@ -46,6 +46,24 @@ public class JiraFormatter {
             case "10004": 
                 result = "Ready For Testing";
                 break;
+            case "10003": 
+                result = "QA Approved";
+                break;
+            case "10101": 
+                result = "Waiting for info";
+                break;
+            case "10007": 
+                result = "Done";
+                break;
+            case "13203": 
+                result = "Acceptance";
+                break;  
+            case "10401": 
+                result = "Inbox";
+                break;
+            case "10500": 
+                result = "Analysis";
+                break;
         }
         
         return result;
